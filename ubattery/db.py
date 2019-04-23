@@ -16,17 +16,13 @@ def get_db():
             # current_app 是另一个特殊对象，该对象指向处理请求的 Flask 应用。
             # 这里 使用了应用工厂，那么在其余的代码中就不会出现应用对象。
             # 当应用创建后，在处理一个请求时， get_db 会被调用。这样就需要使用 current_app 。
-            **current_app.config['DATABASE']
+            **current_app.config['DATABASE'],
+            # 在默认情况下 cursor 方法返回的是 BaseCursor 类型对象，
+            # BaseCursor 类型对象在执行查询后每条记录的结果以列表(list)表示。
+            # 如果要返回字典(dict)表示的记录，
+            # 就要设置 cursorclass 参数为 pymysql.cursors.DictCursor 类。
+            cursorclass=pymysql.cursors.DictCursor
         )
-
-        # 返回字典组成的列表
-        g.db.row_factory = lambda cursor, row: {
-            cursor.description[i][0]: v for i, v in enumerate(row)
-        }
-
-        # `sqlite3.Row` 告诉连接返回类似于字典的行，这样可以通过列名称来操作数据。
-        # 是 Row 类型组成的列表，不能直接转换成json，所以用上面的
-        # g.db.row_factory = sqlite3.Row
 
     return g.db
 

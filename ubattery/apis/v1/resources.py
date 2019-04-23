@@ -24,7 +24,7 @@ class AnalysisAPI(MethodView):
 
         with db.cursor() as cursor:
             cursor.execute(
-                'SELECT timestamp, bty_t_vol, bty_t_curr FROM vehicle1 limit 20'
+                'SELECT timestamp, bty_t_vol, bty_t_curr, s_b_max_t, s_b_min_t FROM vehicle1 limit 20'
             )
             rows = cursor.fetchall()
 
