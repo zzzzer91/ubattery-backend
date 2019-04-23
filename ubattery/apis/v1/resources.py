@@ -1,4 +1,4 @@
-from flask import jsonify, request
+from flask import jsonify
 from flask.views import MethodView
 
 from ubattery.db import get_db
@@ -14,4 +14,21 @@ class IndexAPI(MethodView):
             'api_analysis_url': '/api/v1/analysis',
             'api_success_status': 1,
             'api_fail_status': 0
+        })
+
+
+class AnalysisAPI(MethodView):
+
+    def get(self):
+        db = get_db()
+
+        with db.cursor() as cursor:
+            cursor.execute(
+                'SELECT timestamp, bty_t_vol, bty_t_curr FROM vehicle1 limit 20'
+            )
+            rows = cursor.fetchall()
+
+        return jsonify({
+            'status': 1,
+            'data': rows
         })
