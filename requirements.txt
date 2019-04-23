@@ -1,0 +1,4 @@
+flask
+gunicorn
+click
+pymysql
