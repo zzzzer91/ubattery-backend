@@ -2,6 +2,8 @@ import os
 
 from flask import Flask
 
+TEMPLATE_FOLDER = './dist'
+
 
 def create_app(test_config=None):
     """`create_app()` 是一个应用工厂函数。"""
@@ -12,8 +14,8 @@ def create_app(test_config=None):
     # 实例文件夹在 app 包的外面，用于存放本地数据（例如配置密钥和数据库），不应当提交到版本控制系统。
     app = Flask(__name__,
                 instance_relative_config=True,
-                static_folder='./dist/assets',
-                template_folder='./dist')
+                template_folder=TEMPLATE_FOLDER,
+                static_folder=f'{TEMPLATE_FOLDER}/assets')
 
     load_config(app, test_config)
 
@@ -26,7 +28,6 @@ def create_app(test_config=None):
 
 
 def load_config(app, test_config):
-
     # `os.makedirs()` 可以确保 `app.instance_path` 存在。
     # Flask 不会自动创建实例文件夹，但是必须确保创建这个文件夹，
     # 因为 SQLite 数据库文件会被 保存在里面。
@@ -52,32 +53,22 @@ def load_config(app, test_config):
 
 
 def register_db(app):
-
     from . import db
     db.init_app(app)
 
 
-# def register_extensions(app):
-#
-#     from .extensions import socketio
-#     socketio.init_app(app)
-
-
 def register_blueprints(app):
-
-    from .blueprints.index import index_bp
+    from .blueprints.index import bp as index_bp
     app.register_blueprint(index_bp)
     app.add_url_rule('/', endpoint='index')
 
 
 def register_apis(app):
-
-    from .apis.v1 import api
-    app.register_blueprint(api, url_prefix='/api/v1')
+    from .apis import bp, API_BASE_URL
+    app.register_blueprint(bp, url_prefix=API_BASE_URL)
 
 
 def register_errors(app):
-
     from flask import render_template
 
     # 注册 404 处理页面
