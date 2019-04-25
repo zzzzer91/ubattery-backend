@@ -2,6 +2,8 @@ import os
 
 from flask import Flask
 
+from .common.encoder import DecimalEncoder
+
 TEMPLATE_FOLDER = './dist'
 
 
@@ -16,6 +18,8 @@ def create_app(test_config=None):
                 instance_relative_config=True,
                 template_folder=TEMPLATE_FOLDER,
                 static_folder=f'{TEMPLATE_FOLDER}/assets')
+
+    app.json_encoder = DecimalEncoder
 
     load_config(app, test_config)
 

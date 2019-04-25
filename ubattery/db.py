@@ -21,7 +21,7 @@ def get_db():
             # BaseCursor 类型对象在执行查询后每条记录的结果以列表(list)表示。
             # 如果要返回字典(dict)表示的记录，
             # 就要设置 cursorclass 参数为 pymysql.cursors.DictCursor 类。
-            cursorclass=pymysql.cursors.DictCursor
+            # cursorclass=pymysql.cursors.DictCursor
         )
 
     return g.db
