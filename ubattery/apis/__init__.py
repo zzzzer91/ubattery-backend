@@ -16,8 +16,13 @@ class IndexAPI(MethodView):
             'status': True,
             'api_version': API_VERSION,
             'api_base_url': API_BASE_URL,
-            'api_url_list': [f'{API_BASE_URL}/analysis'],
-            'api_data_format': {'status': 'bool', 'data': 'List[Dict]'}
+            'api_url_list': [
+                f'{API_BASE_URL}/analysis'
+            ],
+            'api_data_format': {
+                'status': 'bool',
+                'data': 'List[Dict]'
+            }
         })
 
 

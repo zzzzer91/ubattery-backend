@@ -7,9 +7,8 @@ from ubattery.db import get_db
 class AnalysisAPI(MethodView):
 
     def get(self):
-        db = get_db()
 
-        with db.cursor() as cursor:
+        with get_db().cursor() as cursor:
             cursor.execute(
                 'SELECT timestamp, bty_t_vol, bty_t_curr, s_b_max_t, s_b_min_t FROM vehicle1 limit 20'
             )

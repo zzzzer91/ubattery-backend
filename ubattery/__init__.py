@@ -54,17 +54,25 @@ def load_config(app, test_config):
 
 def register_db(app):
     from . import db
+
     db.init_app(app)
 
 
 def register_blueprints(app):
     from .blueprints.index import bp as index_bp
+    from .blueprints.auth import bp as auth_bp
+
     app.register_blueprint(index_bp)
+    # 本来蓝图 index 的 url 默认是 '/index'，
+    # 把它改为 '/'
     app.add_url_rule('/', endpoint='index')
+
+    app.register_blueprint(auth_bp)
 
 
 def register_apis(app):
     from .apis import bp, API_BASE_URL
+
     app.register_blueprint(bp, url_prefix=API_BASE_URL)
 
 
