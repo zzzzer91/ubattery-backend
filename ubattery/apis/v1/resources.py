@@ -11,7 +11,7 @@ class AnalysisAPI(MethodView):
         with get_db().cursor() as cursor:
             cursor.execute(
                 'SELECT '
-                'DATE_FORMAT(timestamp, \'%H:%i:%s\'), '
+                'DATE_FORMAT(timestamp, \'%Y-%m-%d %H:%i:%s\'), '
                 'bty_t_vol, '
                 'bty_t_curr, '
                 's_b_max_t, '
@@ -23,8 +23,7 @@ class AnalysisAPI(MethodView):
         return jsonify({
             'status': True,
             'data': {
-                'xAxis_name': '时间',
-                'col_names': ['电压', '电流', '电池最高温度', '电池最低温度'],
+                'col_names': ['时间', '电压', '电流', '电池最高温度', '电池最低温度'],
                 'rows': rows
             }
         })
