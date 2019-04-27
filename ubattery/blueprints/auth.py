@@ -1,6 +1,6 @@
 import functools
 
-from flask import Blueprint, render_template, session, g
+from flask import Blueprint, abort, session, g
 
 from ubattery.db import get_db
 
@@ -18,7 +18,7 @@ def login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         if g.user is None:
-            return render_template('403.html')
+            abort(403)
 
         return view(**kwargs)
 

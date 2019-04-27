@@ -2,9 +2,12 @@ from flask import jsonify, request
 from flask.views import MethodView
 
 from ubattery.db import get_db
+from ubattery.blueprints.auth import login_required
 
 
 class AnalysisAPI(MethodView):
+
+    decorators = [login_required]
 
     def get(self):
 
@@ -26,8 +29,9 @@ class AnalysisAPI(MethodView):
                 's_b_max_v,'
                 's_b_min_v'
                 ' FROM vehicle1 '
-                f'WHERE timestamp > \'{start_date}\' '
-                f'LIMIT {data_limit}'
+                'WHERE timestamp > ? '
+                'LIMIT ?',
+                (start_date, data_limit)
             )
             rows = cursor.fetchall()
 
