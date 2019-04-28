@@ -1,6 +1,8 @@
+import os
 import functools
+from datetime import datetime
 
-from flask import Blueprint, abort, session, g, request, jsonify
+from flask import Blueprint, abort, session, g, request, jsonify, current_app, send_from_directory
 from werkzeug.security import check_password_hash
 
 from ubattery.db import get_db
@@ -43,7 +45,7 @@ def load_logged_in_user():
     else:
         with get_db().cursor() as cursor:
             cursor.execute(
-                'SELECT * FROM user WHERE id = %s', (user_id,)
+                'SELECT id, username FROM users WHERE id = %s', (user_id,)
             )
 
             g.user = cursor.fetchone()
@@ -55,20 +57,36 @@ def login():
 
     data = request.get_json()
 
-    with get_db().cursor() as cursor:
-        cursor.execute(
-            'SELECT id, password FROM user WHERE username = %s', (data['userName'],)
-        )
+    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
+    db = get_db()
+    with db.cursor() as cursor:
+        cursor.execute(
+            'SELECT '
+            'password, '
+            'id, '
+            'username, '
+            'user_type, '
+            'avatar_url, '
+            'DATE_FORMAT(last_login_time, \'%%Y-%%m-%%d %%H:%%i:%%s\') '
+            'FROM users WHERE username = %s',
+            (data['userName'],)
+        )
         user_info = cursor.fetchone()
+
+        cursor.execute(
+            'UPDATE users SET last_login_time = %s WHERE username = %s',
+            (now, data['userName'])
+        )
+        db.commit()
 
     error = None
     if user_info is None:
-        error = '帐号错误！'
+        error = '帐号或密码错误！'
     # check_password_hash() 以相同的方式哈希提交的密码并安全的比较哈希值。
     # 如果匹配成功，那么密码就是正确的。
-    elif not check_password_hash(user_info[1], data['password']):
-        error = '密码错误！'
+    elif not check_password_hash(user_info[0], data['password']):
+        error = '帐号或密码错误！'
 
     # 成功
     if error is None:
@@ -79,11 +97,16 @@ def login():
         session.clear()
         # 现在用户的 id 已被储存在 session 中，可以被后续的请求使用。
         # 请每个请求的开头，如果用户已登录，那么其用户信息应当被载入，以使其可用于其他视图。
-        session['user_id'] = user_info[0]
+        session['user_id'] = user_info[1]
 
         return jsonify({
             'status': True,
-            'data': error
+            'data': {
+                'userName': user_info[2],
+                'userType': user_info[3],
+                'avatarUrl': user_info[4] if user_info[4] else '/media/avatars/null.jpg',
+                'lastLoginTime': user_info[5] if user_info[5] else now
+            }
         })
 
     return jsonify({
@@ -103,3 +126,9 @@ def logout():
         'status': True,
         'data': None
     })
+
+
+@bp.route('/media/avatars/<path:filename>')
+def get_avatar(filename):
+    base_dir = os.path.join(current_app.instance_path, current_app.config['AVATAR_PATH'])
+    return send_from_directory(base_dir, filename)
