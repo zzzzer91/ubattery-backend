@@ -7,20 +7,18 @@ from ubattery.blueprints.auth import login_required
 
 class AnalysisAPI(MethodView):
 
-    decorators = [login_required]
-
     def get(self):
 
         args = request.args
 
-        start_date = args.get('startDate', '2017-1-1 1:1:1')
-        data_limit = args.get('dataLimit', 500)
+        # TODO 后台参数合法性检查
+        start_date = args.get('startDate', '2015-1-1 1:1:1')
+        data_limit = int(args.get('dataLimit', 500))
 
         with get_db().cursor() as cursor:
-            # TODO sql 注入
             cursor.execute(
                 'SELECT '
-                'DATE_FORMAT(timestamp, \'%Y-%m-%d %H:%i:%s\'),'
+                'DATE_FORMAT(timestamp, \'%%Y-%%m-%%d %%H:%%i:%%s\'),'
                 'bty_t_vol,'
                 'bty_t_curr,'
                 'met_spd,'
@@ -29,8 +27,8 @@ class AnalysisAPI(MethodView):
                 's_b_max_v,'
                 's_b_min_v'
                 ' FROM vehicle1 '
-                'WHERE timestamp > ? '
-                'LIMIT ?',
+                'WHERE timestamp > %s '
+                'LIMIT %s',
                 (start_date, data_limit)
             )
             rows = cursor.fetchall()
