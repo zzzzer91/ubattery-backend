@@ -8,6 +8,8 @@ from ubattery.blueprints.auth import login_required
 
 class AnalysisAPI(MethodView):
 
+    decorators = [login_required]
+
     def get(self):
 
         args = request.args
