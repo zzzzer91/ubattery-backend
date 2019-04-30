@@ -1,10 +1,15 @@
 -- Initialize the database.
 
-CREATE TABLE IF NOT EXISTS `user` (
+CREATE TABLE IF NOT EXISTS `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(32) NOT NULL,
   `password` varchar(128) NOT NULL,
-  PRIMARY KEY (`id`)
+  `user_type` tinyint(3) unsigned NOT NULL DEFAULT 0 COMMENT '用户类型，1超级用户，0普通用户',
+  `avatar_url` varchar(256) DEFAULT NULL COMMENT '头像地址',
+  `last_login_time` datetime DEFAULT NULL COMMENT '用户最后登录时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_UN` (`username`),
+  UNIQUE KEY `user_username_IDX` (`username`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `vehicle1` (

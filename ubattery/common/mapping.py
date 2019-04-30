@@ -5,6 +5,6 @@ LABEL_TO_NAME = {
   'met_spd': '车速',
   's_b_max_t': '单体最高温度',
   's_b_min_t': '单体最低温度',
-  's_b_max_v':'单体最高电压',
+  's_b_max_v': '单体最高电压',
   's_b_min_v': '单体最低电压'
 }
