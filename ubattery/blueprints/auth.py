@@ -28,8 +28,9 @@ def login_required(view):
     return wrapped_view
 
 
-# bp.before_app_request() 注册一个在视图函数之前运行的函数，不论其 URL 是什么。
-# 这时全局的
+# bp.before_app_request 注册一个在视图函数之前运行的函数，不论其 URL 是什么。
+# before_app_request 全局的
+# before_requests 是当前蓝图的
 @bp.before_app_request
 def load_logged_in_user():
     """load_logged_in_user 检查用户 id 是否已经储存在 session 中，
@@ -38,80 +39,115 @@ def load_logged_in_user():
     如果没有用户 id ，或者 id 不存在，那么 g.user 将会是 None 。
     """
 
-    user_id = session.get('user_id')
+    user_name = session.get('user_name')
 
-    if user_id is None:
+    if user_name is None:
         g.user = None
     else:
+        # TODO 可以加缓存
         with get_db().cursor() as cursor:
             cursor.execute(
-                'SELECT id, username FROM users WHERE id = %s', (user_id,)
+                'SELECT id, user_name FROM users WHERE user_name = %s LIMIT 1', (user_name,)
             )
 
             g.user = cursor.fetchone()
 
 
-@bp.route('/login', methods=('POST',))
+@bp.route('/login', methods=('GET', 'POST'))
 def login():
     """Log in a registered user by adding the user id to the session."""
 
-    data = request.get_json()
-
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-    db = get_db()
-    with db.cursor() as cursor:
-        cursor.execute(
-            'SELECT '
-            'password, '
-            'id, '
-            'username, '
-            'user_type, '
-            'avatar_url, '
-            'DATE_FORMAT(last_login_time, \'%%Y-%%m-%%d %%H:%%i:%%s\') '
-            'FROM users WHERE username = %s',
-            (data['userName'],)
-        )
-        user_info = cursor.fetchone()
+    if request.method == 'GET':
+        user_name = session.get('user_name')
 
-        cursor.execute(
-            'UPDATE users SET last_login_time = %s WHERE username = %s',
-            (now, data['userName'])
-        )
-        db.commit()
+        if user_name is None:
+            return jsonify({
+                'status': False,
+                'data': None
+            })
 
-    error = None
-    if user_info is None:
-        error = '帐号或密码错误！'
-    # check_password_hash() 以相同的方式哈希提交的密码并安全的比较哈希值。
-    # 如果匹配成功，那么密码就是正确的。
-    elif not check_password_hash(user_info[0], data['password']):
-        error = '帐号或密码错误！'
+        db = get_db()
+        with db.cursor() as cursor:
+            cursor.execute(
+                'SELECT '
+                'password, '
+                'id, '
+                'user_name, '
+                'user_type, '
+                'avatar_name, '
+                'DATE_FORMAT(last_login_time, \'%%Y-%%m-%%d %%H:%%i:%%s\') '
+                'FROM users WHERE user_name = %s LIMIT 1',
+                (user_name,)
+            )
+            user_info = cursor.fetchone()
 
-    # 成功
-    if error is None:
-        # session 是一个 dict ，它用于储存横跨请求的值。
-        # 当验证 成功后，用户的 id 被储存于一个新的会话中。
-        # 会话数据被储存到一个 向浏览器发送的 cookie 中，在后继请求中，浏览器会返回它。
-        # Flask 会安全对数据进行 签名 以防数据被篡改。
-        session.clear()
-        # 现在用户的 id 已被储存在 session 中，可以被后续的请求使用。
-        # 请每个请求的开头，如果用户已登录，那么其用户信息应当被载入，以使其可用于其他视图。
-        session['user_id'] = user_info[1]
+            if user_info is None:
 
-        return jsonify({
-            'status': True,
-            'data': {
-                'userName': user_info[2],
-                'userType': user_info[3],
-                'avatarUrl': user_info[4] if user_info[4] else '/media/avatars/null.jpg',
-                'lastLoginTime': user_info[5] if user_info[5] else now
-            }
-        })
+                return jsonify({
+                    'status': False,
+                    'data': None
+                })
+
+    else:
+        data = request.get_json()
+        user_name = data['userName']
+
+        db = get_db()
+        with db.cursor() as cursor:
+            cursor.execute(
+                'SELECT '
+                'password, '
+                'id, '
+                'user_name, '
+                'user_type, '
+                'avatar_name, '
+                'DATE_FORMAT(last_login_time, \'%%Y-%%m-%%d %%H:%%i:%%s\') '
+                'FROM users WHERE user_name = %s LIMIT 1',
+                (user_name,)
+            )
+            user_info = cursor.fetchone()
+
+            error = None
+            if user_info is None:
+                error = '帐号或密码错误！'
+            # check_password_hash() 以相同的方式哈希提交的密码并安全的比较哈希值。
+            # 如果匹配成功，那么密码就是正确的。
+            elif not check_password_hash(user_info[0], data['password']):
+                error = '帐号或密码错误！'
+
+            if error:
+                return jsonify({
+                    'status': False,
+                    'data': error
+                })
+
+            # 更新最后登录时间
+            cursor.execute(
+                'UPDATE users SET last_login_time = %s WHERE user_name = %s',
+                (now, user_name)
+            )
+            db.commit()
+
+    # session 是一个 dict ，它用于储存横跨请求的值。
+    # 当验证 成功后，用户的 id 被储存于一个新的会话中。
+    # 会话数据被储存到一个 向浏览器发送的 cookie 中，在后继请求中，浏览器会返回它。
+    # Flask 会安全对数据进行 签名 以防数据被篡改。
+    # 默认存活时间为到浏览器关闭
+    session.clear()
+    # 现在用户的 id 已被储存在 session 中，可以被后续的请求使用。
+    # 请每个请求的开头，如果用户已登录，那么其用户信息应当被载入，以使其可用于其他视图。
+    session['user_name'] = user_info[2]
 
     return jsonify({
-        'status': False,
-        'data': error
+        'status': True,
+        'data': {
+            'userName': user_info[2],
+            'userType': user_info[3],
+            'avatarName': user_info[4],
+            'lastLoginTime': user_info[5]
+        }
     })
 
 
@@ -122,6 +158,7 @@ def logout():
     """
 
     session.clear()
+
     return jsonify({
         'status': True,
         'data': None
@@ -131,4 +168,5 @@ def logout():
 @bp.route('/media/avatars/<path:filename>')
 def get_avatar(filename):
     base_dir = os.path.join(current_app.instance_path, current_app.config['AVATAR_PATH'])
+
     return send_from_directory(base_dir, filename)

@@ -2,7 +2,7 @@ import os
 
 from flask import Flask
 
-from .common.encoder import DecimalEncoder
+from .common.json_encoder import DecimalEncoder
 
 TEMPLATE_FOLDER = './dist'
 
