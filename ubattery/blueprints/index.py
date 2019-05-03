@@ -1,4 +1,6 @@
-from flask import Blueprint, render_template
+import os
+
+from flask import Blueprint, render_template, send_from_directory, current_app
 
 # Blueprint 是一种组织一组相关视图及其他代码的方式。
 # 与把视图及其他 代码直接注册到应用的方式不同，
@@ -12,3 +14,8 @@ bp = Blueprint('index', __name__)
 @bp.route('/')
 def index():
     return render_template('index.html')
+
+
+@bp.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(current_app.root_path, 'dist'), 'favicon.ico')

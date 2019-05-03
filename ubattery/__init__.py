@@ -26,7 +26,7 @@ def create_app(test_config=None):
     register_db(app)
     register_blueprints(app)
     register_apis(app)
-    register_errors(app)
+    # register_errors(app)
 
     return app
 

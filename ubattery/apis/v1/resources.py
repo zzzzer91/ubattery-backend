@@ -16,7 +16,7 @@ class AnalysisAPI(MethodView):
 
         # TODO 后台参数合法性检查
         start_date = args.get('startDate', '2017-1-1 0:0:0')
-        data_limit = int(args.get('dataLimit', 500))
+        data_limit = int(args.get('dataLimit', 500))  # 限制大小
         need_params = args.get('needParams')
 
         col_names = ['时间']
@@ -39,11 +39,17 @@ class AnalysisAPI(MethodView):
                 (start_date, data_limit)
             )
             rows = cursor.fetchall()
-
-        return jsonify({
-            'status': True,
-            'data': {
+            data = {
                 'col_names': col_names,
                 'rows': rows
             }
+
+        status = True
+        if len(rows) == 0:
+            status = False
+            data = '没有数据！'
+
+        return jsonify({
+            'status': status,
+            'data': data
         })
