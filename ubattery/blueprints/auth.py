@@ -3,9 +3,11 @@ import functools
 from datetime import datetime
 
 from flask import Blueprint, abort, session, g, request, jsonify, current_app, send_from_directory
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
+from pymysql import IntegrityError
 
 from ubattery.db import get_db
+from ubattery.common import checker
 
 bp = Blueprint('auth', __name__)
 
@@ -21,6 +23,23 @@ def login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         if g.user is None:
+            abort(403)
+
+        return view(**kwargs)
+
+    return wrapped_view
+
+
+def super_user_required(view):
+    """只有超级管理员才能操作
+    """
+
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user is None:
+            abort(403)
+        user_type = g.user[1]
+        if user_type != 1:  # 不是超级管理员
             abort(403)
 
         return view(**kwargs)
@@ -47,7 +66,7 @@ def load_logged_in_user():
         # TODO 可以加缓存
         with get_db().cursor() as cursor:
             cursor.execute(
-                'SELECT id, user_name FROM users WHERE user_name = %s LIMIT 1', (user_name,)
+                'SELECT user_name, user_type FROM users WHERE user_name = %s LIMIT 1', (user_name,)
             )
 
             g.user = cursor.fetchone()
@@ -55,7 +74,6 @@ def load_logged_in_user():
 
 @bp.route('/login', methods=('GET', 'POST'))
 def login():
-    """Log in a registered user by adding the user id to the session."""
 
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
@@ -152,6 +170,7 @@ def login():
 
 
 @bp.route('/logout')
+@login_required
 def logout():
     """注销的时候需要把用户 id 从 session 中移除。
     然后 load_logged_in_user 就不会在后继请求中载入用户了。
@@ -165,8 +184,90 @@ def logout():
     })
 
 
+@bp.route('/register', methods=('POST', ))
+@super_user_required
+def register():
+
+    data = request.get_json()
+
+    user_name = data['userName']
+    if not checker.RE_SIX_CHARACTER_CHECKER.match(user_name):
+        return jsonify({
+            'status': False,
+            'data': '创建用户失败！'
+        })
+
+    password = data['password']
+    if not checker.RE_SIX_CHARACTER_CHECKER.match(password):
+        return jsonify({
+            'status': False,
+            'data': '创建用户失败！'
+        })
+
+    comment = data['comment']
+    if len(comment) > 64:
+        return jsonify({
+            'status': False,
+            'data': '创建用户失败！'
+        })
+
+    db = get_db()
+    with db.cursor() as cursor:
+        try:
+            cursor.execute(
+                'INSERT INTO users '
+                '(user_name, password, comment) '
+                'VALUES (%s, %s, %s)',
+                (user_name, generate_password_hash(password), comment)
+            )
+        except IntegrityError:
+            return jsonify({
+                'status': False,
+                'data': '用户已存在！'
+            })
+        db.commit()
+
+    return jsonify({
+        'status': True,
+        'data': None
+    })
+
+
+@bp.route('/users', methods=('GET', ))
+@super_user_required
+def get_user_list():
+    """获取普通用户列表"""
+
+    db = get_db()
+    with db.cursor() as cursor:
+        cursor.execute(
+            'SELECT '
+            'user_name, '
+            'DATE_FORMAT(last_login_time, \'%Y-%m-%d %H:%i:%s\'), '
+            'comment '
+            'FROM users WHERE user_type != 1'
+        )
+        rows = cursor.fetchall()
+
+    data = []
+    for row in rows:
+        data.append({
+            'userName': row[0],
+            'lastLoginTime': row[1],
+            'comment': row[2],
+        })
+
+    return jsonify({
+        'status': True,
+        'data': data
+    })
+
+
 @bp.route('/media/avatars/<path:filename>')
+@login_required
 def get_avatar(filename):
+    """获取用户头像"""
+
     base_dir = os.path.join(current_app.instance_path, current_app.config['AVATAR_PATH'])
 
     return send_from_directory(base_dir, filename)
