@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify
 from flask.views import MethodView
 
-from .v1.resources import AnalysisAPI
+from .v1 import AnalysisAPI, UsersAPI
 from ubattery.blueprints.auth import login_required
 
 bp = Blueprint('api', __name__)
@@ -36,9 +36,21 @@ bp.add_url_rule(
     methods=['GET']
 )
 
-batch_view = AnalysisAPI.as_view('analysis_api')
+analysis_view = AnalysisAPI.as_view('analysis_api')
 bp.add_url_rule(
     '/analysis',
-    view_func=batch_view,
+    view_func=analysis_view,
     methods=['GET']
+)
+
+users_view = UsersAPI.as_view('users_api')
+bp.add_url_rule(
+    '/users',
+    view_func=users_view,
+    methods=['GET', 'POST']
+)
+bp.add_url_rule(
+    '/users/<string:users_name>',
+    view_func=users_view,
+    methods=['PUT']
 )

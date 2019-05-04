@@ -3,11 +3,9 @@ import functools
 from datetime import datetime
 
 from flask import Blueprint, abort, session, g, request, jsonify, current_app, send_from_directory
-from werkzeug.security import check_password_hash, generate_password_hash
-from pymysql import IntegrityError
+from werkzeug.security import check_password_hash
 
 from ubattery.db import get_db
-from ubattery.common import checker
 
 bp = Blueprint('auth', __name__)
 
@@ -184,86 +182,7 @@ def logout():
     })
 
 
-@bp.route('/register', methods=('POST', ))
-@super_user_required
-def register():
-
-    data = request.get_json()
-
-    user_name = data['userName']
-    if not checker.RE_SIX_CHARACTER_CHECKER.match(user_name):
-        return jsonify({
-            'status': False,
-            'data': '创建用户失败！'
-        })
-
-    password = data['password']
-    if not checker.RE_SIX_CHARACTER_CHECKER.match(password):
-        return jsonify({
-            'status': False,
-            'data': '创建用户失败！'
-        })
-
-    comment = data['comment']
-    if len(comment) > 64:
-        return jsonify({
-            'status': False,
-            'data': '创建用户失败！'
-        })
-
-    db = get_db()
-    with db.cursor() as cursor:
-        try:
-            cursor.execute(
-                'INSERT INTO users '
-                '(user_name, password, comment) '
-                'VALUES (%s, %s, %s)',
-                (user_name, generate_password_hash(password), comment)
-            )
-        except IntegrityError:
-            return jsonify({
-                'status': False,
-                'data': '用户已存在！'
-            })
-        db.commit()
-
-    return jsonify({
-        'status': True,
-        'data': None
-    })
-
-
-@bp.route('/users', methods=('GET', ))
-@super_user_required
-def get_user_list():
-    """获取普通用户列表"""
-
-    db = get_db()
-    with db.cursor() as cursor:
-        cursor.execute(
-            'SELECT '
-            'user_name, '
-            'DATE_FORMAT(last_login_time, \'%Y-%m-%d %H:%i:%s\'), '
-            'comment '
-            'FROM users WHERE user_type != 1'
-        )
-        rows = cursor.fetchall()
-
-    data = []
-    for row in rows:
-        data.append({
-            'userName': row[0],
-            'lastLoginTime': row[1],
-            'comment': row[2],
-        })
-
-    return jsonify({
-        'status': True,
-        'data': data
-    })
-
-
-@bp.route('/media/avatars/<path:filename>')
+@bp.route('/media/avatars/<string:filename>')
 @login_required
 def get_avatar(filename):
     """获取用户头像"""
