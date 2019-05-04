@@ -139,9 +139,11 @@ def login():
                     'data': error
                 })
 
-            # 更新最后登录时间
             cursor.execute(
-                'UPDATE users SET last_login_time = %s WHERE user_name = %s',
+                'UPDATE users SET '
+                'last_login_time = %s, '          # 更新最后登录时间
+                'login_count = login_count + 1 '  # 登录次数加 1
+                'WHERE user_name = %s',
                 (now, user_name)
             )
             db.commit()
@@ -156,6 +158,7 @@ def login():
     # 请每个请求的开头，如果用户已登录，那么其用户信息应当被载入，以使其可用于其他视图。
     session['user_name'] = user_info[2]
 
+    # TODO 返回时要注意数据顺序，别把重要数据返回了
     return jsonify({
         'status': True,
         'data': {

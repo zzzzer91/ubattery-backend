@@ -50,7 +50,7 @@ bp.add_url_rule(
     methods=['GET', 'POST']
 )
 bp.add_url_rule(
-    '/users/<string:users_name>',
+    '/users/<string:user_name>',
     view_func=users_view,
     methods=['PUT']
 )

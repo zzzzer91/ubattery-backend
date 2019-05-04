@@ -21,7 +21,8 @@ class UsersAPI(MethodView):
                 'SELECT '
                 'user_name, '
                 'DATE_FORMAT(last_login_time, \'%Y-%m-%d %H:%i:%s\'), '
-                'comment '
+                'comment, '
+                'login_count '
                 'FROM users WHERE user_type != 1'
             )
             rows = cursor.fetchall()
@@ -32,6 +33,7 @@ class UsersAPI(MethodView):
                 'userName': row[0],
                 'lastLoginTime': row[1],
                 'comment': row[2],
+                'loginCount': row[3],
             })
 
         return jsonify({
@@ -87,4 +89,27 @@ class UsersAPI(MethodView):
         })
 
     def put(self, user_name):
-        pass
+
+        data = request.get_json()
+
+        comment = data['comment']
+        if len(comment) > 64:
+            return jsonify({
+                'status': False,
+                'data': '备注长度不能大于 64！'
+            })
+
+        db = get_db()
+        with db.cursor() as cursor:
+            cursor.execute(
+                'UPDATE users '
+                'set comment = %s '
+                'WHERE user_name = %s',
+                (comment, user_name)
+            )
+            db.commit()
+
+        return jsonify({
+            'status': True,
+            'data': None
+        })
