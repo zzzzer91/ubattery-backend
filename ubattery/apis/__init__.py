@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify
 from flask.views import MethodView
 
 from .v1.resources import AnalysisAPI
+from ubattery.blueprints.auth import login_required
 
 bp = Blueprint('api', __name__)
 
@@ -10,6 +11,8 @@ API_BASE_URL = f'/api/{API_VERSION}'
 
 
 class IndexAPI(MethodView):
+
+    decorators = [login_required]
 
     def get(self):
         return jsonify({

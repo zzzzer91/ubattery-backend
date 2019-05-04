@@ -4,8 +4,6 @@ from flask import Flask
 
 from .common.json_encoder import DecimalEncoder
 
-TEMPLATE_FOLDER = './dist'
-
 
 def create_app(test_config=None):
     """`create_app()` 是一个应用工厂函数。"""
@@ -16,8 +14,8 @@ def create_app(test_config=None):
     # 实例文件夹在 app 包的外面，用于存放本地数据（例如配置密钥和数据库），不应当提交到版本控制系统。
     app = Flask(__name__,
                 instance_relative_config=True,
-                template_folder=TEMPLATE_FOLDER,
-                static_folder=f'{TEMPLATE_FOLDER}/assets')
+                template_folder='./dist',
+                static_folder='./dist/assets')
 
     app.json_encoder = DecimalEncoder
 
@@ -26,7 +24,7 @@ def create_app(test_config=None):
     register_db(app)
     register_blueprints(app)
     register_apis(app)
-    # register_errors(app)
+    register_errors(app)
 
     return app
 
@@ -82,6 +80,11 @@ def register_apis(app):
 
 def register_errors(app):
     from flask import render_template
+
+    # 注册 403 处理页面
+    @app.errorhandler(403)
+    def page_not_found(error):
+        return render_template('403.html'), 403
 
     # 注册 404 处理页面
     @app.errorhandler(404)
