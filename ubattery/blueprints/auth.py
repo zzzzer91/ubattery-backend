@@ -93,17 +93,23 @@ def login():
                 'user_name, '
                 'user_type, '
                 'avatar_name, '
-                'DATE_FORMAT(last_login_time, \'%%Y-%%m-%%d %%H:%%i:%%s\') '
+                'DATE_FORMAT(last_login_time, \'%%Y-%%m-%%d %%H:%%i:%%s\'), '
+                'user_status '
                 'FROM users WHERE user_name = %s LIMIT 1',
                 (user_name,)
             )
             user_info = cursor.fetchone()
 
+            error = None
             if user_info is None:
+                error = 'cookie 获取失败！'
+            elif user_info[6] == 0:
+                error = '该用户已被禁止登录！'
 
+            if error:
                 return jsonify({
                     'status': False,
-                    'data': None
+                    'data': error
                 })
 
     else:
@@ -119,7 +125,8 @@ def login():
                 'user_name, '
                 'user_type, '
                 'avatar_name, '
-                'DATE_FORMAT(last_login_time, \'%%Y-%%m-%%d %%H:%%i:%%s\') '
+                'DATE_FORMAT(last_login_time, \'%%Y-%%m-%%d %%H:%%i:%%s\'), '
+                'user_status '
                 'FROM users WHERE user_name = %s LIMIT 1',
                 (user_name,)
             )
@@ -132,6 +139,8 @@ def login():
             # 如果匹配成功，那么密码就是正确的。
             elif not check_password_hash(user_info[0], data['password']):
                 error = '帐号或密码错误！'
+            elif user_info[6] == 0:
+                error = '该用户已被禁止登录！'
 
             if error:
                 return jsonify({

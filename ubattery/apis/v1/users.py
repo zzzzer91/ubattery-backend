@@ -22,7 +22,8 @@ class UsersAPI(MethodView):
                 'user_name, '
                 'DATE_FORMAT(last_login_time, \'%Y-%m-%d %H:%i:%s\'), '
                 'comment, '
-                'login_count '
+                'login_count, '
+                'user_status '
                 'FROM users WHERE user_type != 1'
             )
             rows = cursor.fetchall()
@@ -34,6 +35,7 @@ class UsersAPI(MethodView):
                 'lastLoginTime': row[1],
                 'comment': row[2],
                 'loginCount': row[3],
+                'userStatus': True if row[4] == 1 else False,
             })
 
         return jsonify({
@@ -50,21 +52,21 @@ class UsersAPI(MethodView):
         if not checker.RE_SIX_CHARACTER_CHECKER.match(user_name):
             return jsonify({
                 'status': False,
-                'data': '创建用户失败！'
+                'data': '创建失败！'
             })
 
         password = data['password']
         if not checker.RE_SIX_CHARACTER_CHECKER.match(password):
             return jsonify({
                 'status': False,
-                'data': '创建用户失败！'
+                'data': '创建失败！'
             })
 
         comment = data['comment']
         if len(comment) > 64:
             return jsonify({
                 'status': False,
-                'data': '创建用户失败！'
+                'data': '创建失败！'
             })
 
         db = get_db()
@@ -96,16 +98,25 @@ class UsersAPI(MethodView):
         if len(comment) > 64:
             return jsonify({
                 'status': False,
-                'data': '备注长度不能大于 64！'
+                'data': '修改失败！'
             })
+
+        user_status = data['userStatus']
+        if not isinstance(user_status, bool):  # 拿到的是 bool 类型
+            return jsonify({
+                'status': False,
+                'data': '修改失败！'
+            })
+        user_status = int(user_status)
 
         db = get_db()
         with db.cursor() as cursor:
             cursor.execute(
                 'UPDATE users '
-                'set comment = %s '
+                'set comment = %s, '
+                'user_status = %s '
                 'WHERE user_name = %s',
-                (comment, user_name)
+                (comment, user_status, user_name)
             )
             db.commit()
 
