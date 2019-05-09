@@ -8,5 +8,7 @@ LABEL_TO_NAME = {
     's_b_max_v': '单体最高电压',
     's_b_min_v': '单体最低电压',
     'p_t_p': '正向累计电量',
-    'battery_soc': 'soc',
+    'r_t_p': '反向累计电量',
+    'total_mileage': '总里程',
+    'battery_soc': 'SOC',
 }

@@ -10,6 +10,7 @@ from ubattery.common import checker
 
 class UsersAPI(MethodView):
 
+    # 只有超级管理员才有权限
     decorators = [super_user_required]
 
     def get(self):

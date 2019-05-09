@@ -4,6 +4,7 @@ from datetime import datetime
 
 from flask import Blueprint, abort, session, g, request, jsonify, current_app, send_from_directory
 from werkzeug.security import check_password_hash
+from werkzeug.contrib.cache import SimpleCache
 
 from ubattery.db import get_db
 
@@ -45,9 +46,12 @@ def super_user_required(view):
     return wrapped_view
 
 
+# 用于缓存用户信息
+user_cache = SimpleCache()
+
 # bp.before_app_request 注册一个在视图函数之前运行的函数，不论其 URL 是什么。
 # before_app_request 全局的
-# before_requests 是当前蓝图的
+# before_request 是当前蓝图的
 @bp.before_app_request
 def load_logged_in_user():
     """load_logged_in_user 检查用户 id 是否已经储存在 session 中，
@@ -61,13 +65,17 @@ def load_logged_in_user():
     if user_name is None:
         g.user = None
     else:
-        # TODO 可以加缓存
-        with get_db().cursor() as cursor:
-            cursor.execute(
-                'SELECT user_name, user_type FROM users WHERE user_name = %s LIMIT 1', (user_name,)
-            )
+        g.user = user_cache.get(user_name)
+        if g.user is None:
+            with get_db().cursor() as cursor:
+                cursor.execute(
+                    'SELECT user_name, user_type FROM users WHERE user_name = %s LIMIT 1', (user_name,)
+                )
 
-            g.user = cursor.fetchone()
+                g.user = cursor.fetchone()
+
+            if g.user is not None:
+                user_cache.set(user_name, g.user)
 
 
 @bp.route('/login', methods=('GET', 'POST'))

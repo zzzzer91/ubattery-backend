@@ -1,13 +1,12 @@
 from flask import Blueprint, jsonify
 from flask.views import MethodView
 
-from .v1 import AnalysisAPI, UsersAPI
+from .v1 import AnalysisAPI, UsersAPI, API_VERSION
 from ubattery.blueprints.auth import login_required
 
-bp = Blueprint('api', __name__)
-
-API_VERSION = 'v1'
 API_BASE_URL = f'/api/{API_VERSION}'
+
+bp = Blueprint('api', __name__)
 
 
 class IndexAPI(MethodView):
@@ -49,7 +48,7 @@ bp.add_url_rule(
     view_func=users_view,
     methods=['GET', 'POST']
 )
-bp.add_url_rule(
+bp.add_url_rule(  # 修改用户信息
     '/users/<string:user_name>',
     view_func=users_view,
     methods=['PUT']
