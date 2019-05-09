@@ -1,6 +1,7 @@
 werkzeug
+watchdog
+click
 flask
 gunicorn
 eventlet
-click
 pymysql
