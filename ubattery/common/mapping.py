@@ -1,3 +1,13 @@
+"""
+映射，同时也能过滤不合法字段
+"""
+
+# 表名到实际名的转换
+TABLE_TO_NAME = {
+    'vehicle1': '4F37195C1A908CFBE0532932A8C0EECB'
+}
+
+# 表中字段名到实际名的转换
 LABEL_TO_NAME = {
     'timestamp': '时间',
     'bty_t_vol': '总电压',
