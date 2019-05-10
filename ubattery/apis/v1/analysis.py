@@ -2,8 +2,9 @@ from flask import jsonify, request, abort
 from flask.views import MethodView
 
 from ubattery.db import get_db
-from ubattery.common.mapping import TABLE_TO_NAME, LABEL_TO_NAME
 from ubattery.blueprints.auth import login_required
+from ubattery.common.mapping import TABLE_TO_NAME, LABEL_TO_NAME
+from ubattery.common.checker import RE_DATETIME_CHECKER
 
 
 class AnalysisAPI(MethodView):
@@ -20,7 +21,7 @@ class AnalysisAPI(MethodView):
             abort(500)
 
         start_date = args.get('startDate')
-        if start_date is None:
+        if start_date is None or not RE_DATETIME_CHECKER.match(start_date):
             abort(500)
 
         # 必须是 int 类型，不然 pymysql 进行类型转换时会出现错误
@@ -32,7 +33,6 @@ class AnalysisAPI(MethodView):
         need_params = args.get('needParams', '').strip()
         if need_params == '':
             abort(500)
-
         col_names = ['时间']
         # 把字段名转换成实际名，同时也是进行 sql 过滤
         for k in need_params.split(','):
@@ -44,14 +44,15 @@ class AnalysisAPI(MethodView):
                 'DATE_FORMAT(timestamp, \'%%Y-%%m-%%d %%H:%%i:%%s\'),'
                 f'{need_params} '
                 f'FROM {data_come_from} '
-                'WHERE timestamp > %s '
+                'WHERE timestamp >= %s '
                 'LIMIT %s',
                 (start_date, data_limit)
             )
             rows = cursor.fetchall()
             data = {
-                'col_names': col_names,
-                'rows': rows
+                'colNames': col_names,
+                'rows': rows,
+                'rowCount': len(rows)
             }
 
         status = True
