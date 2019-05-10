@@ -102,7 +102,8 @@ def login():
                 'user_type, '
                 'avatar_name, '
                 'DATE_FORMAT(last_login_time, \'%%Y-%%m-%%d %%H:%%i:%%s\'), '
-                'user_status '
+                'user_status, '
+                'login_count '
                 'FROM users WHERE user_name = %s LIMIT 1',
                 (user_name,)
             )
@@ -134,7 +135,8 @@ def login():
                 'user_type, '
                 'avatar_name, '
                 'DATE_FORMAT(last_login_time, \'%%Y-%%m-%%d %%H:%%i:%%s\'), '
-                'user_status '
+                'user_status, '
+                'login_count '
                 'FROM users WHERE user_name = %s LIMIT 1',
                 (user_name,)
             )
@@ -182,7 +184,8 @@ def login():
             'userName': user_info[2],
             'userType': user_info[3],
             'avatarName': user_info[4],
-            'lastLoginTime': user_info[5]
+            'lastLoginTime': user_info[5],
+            'loginCount': user_info[7] + 1
         }
     })
 

@@ -24,7 +24,8 @@ class UsersAPI(MethodView):
                 'DATE_FORMAT(last_login_time, \'%Y-%m-%d %H:%i:%s\'), '
                 'comment, '
                 'login_count, '
-                'user_status '
+                'user_status, '
+                'DATE_FORMAT(create_time, \'%Y-%m-%d %H:%i:%s\') '
                 'FROM users WHERE user_type != 1'
             )
             rows = cursor.fetchall()
@@ -37,6 +38,7 @@ class UsersAPI(MethodView):
                 'comment': row[2],
                 'loginCount': row[3],
                 'userStatus': True if row[4] == 1 else False,
+                'createTime': row[5]
             })
 
         return jsonify({
