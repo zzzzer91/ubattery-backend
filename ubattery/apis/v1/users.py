@@ -1,4 +1,4 @@
-from flask import jsonify, request
+from flask import jsonify, request, abort
 from flask.views import MethodView
 from werkzeug.security import generate_password_hash
 from pymysql import IntegrityError
@@ -53,24 +53,15 @@ class UsersAPI(MethodView):
 
         user_name = data['userName']
         if not checker.RE_SIX_CHARACTER_CHECKER.match(user_name):
-            return jsonify({
-                'status': False,
-                'data': '创建失败！'
-            })
+            abort(500)
 
         password = data['password']
         if not checker.RE_SIX_CHARACTER_CHECKER.match(password):
-            return jsonify({
-                'status': False,
-                'data': '创建失败！'
-            })
+            abort(500)
 
         comment = data['comment']
         if len(comment) > 64:
-            return jsonify({
-                'status': False,
-                'data': '创建失败！'
-            })
+            abort(500)
 
         db = get_db()
         with db.cursor() as cursor:
@@ -99,17 +90,11 @@ class UsersAPI(MethodView):
 
         comment = data['comment']
         if len(comment) > 64:
-            return jsonify({
-                'status': False,
-                'data': '修改失败！'
-            })
+            abort(500)
 
         user_status = data['userStatus']
         if not isinstance(user_status, bool):  # 拿到的是 bool 类型
-            return jsonify({
-                'status': False,
-                'data': '修改失败！'
-            })
+            abort(500)
         user_status = int(user_status)
 
         db = get_db()
