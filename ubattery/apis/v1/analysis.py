@@ -45,6 +45,7 @@ class AnalysisAPI(MethodView):
                 f'{need_params} '
                 f'FROM {data_come_from} '
                 'WHERE timestamp >= %s '
+                'ORDER BY timestamp '
                 'LIMIT %s',
                 (start_date, data_limit)
             )
