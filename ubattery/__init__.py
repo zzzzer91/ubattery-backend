@@ -61,21 +61,21 @@ def register_db(app):
 
 
 def register_blueprints(app):
-    from .blueprints.index import bp as index_bp
-    from .blueprints.auth import bp as auth_bp
+    from .blueprints.index import bp as bp_index
+    from .blueprints.auth import bp as bp_auth
 
-    app.register_blueprint(index_bp)
+    app.register_blueprint(bp_index)
     # 本来蓝图 index 的 url 默认是 '/index'，
     # 把它改为 '/'
     app.add_url_rule('/', endpoint='index')
 
-    app.register_blueprint(auth_bp)
+    app.register_blueprint(bp_auth)
 
 
 def register_apis(app):
-    from .apis import bp, API_BASE_URL
+    from .apis import bp_api_v1
 
-    app.register_blueprint(bp, url_prefix=API_BASE_URL)
+    app.register_blueprint(bp_api_v1)
 
 
 def register_errors(app):

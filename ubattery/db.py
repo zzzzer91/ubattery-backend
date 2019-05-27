@@ -20,8 +20,8 @@ def get_db():
             # BaseCursor 类型对象在执行查询后每条记录的结果以列表(list)表示。
             # 如果要返回字典(dict)表示的记录，
             # 就要设置 cursorclass 参数为 pymysql.cursors.DictCursor 类。
-            # 但这种方法有缺陷，如在 SQL 语句中使用了某些函数，DATE_FORMAT()，
-            # 会导致返回错误的 key 名
+            # 如在 SQL 语句中使用了某些函数，DATE_FORMAT()，
+            # 需给列设置别名，才会返回正确的 key 名
             # cursorclass=pymysql.cursors.DictCursor
         )
 
