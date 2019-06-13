@@ -2,14 +2,17 @@
 
 CREATE TABLE IF NOT EXISTS `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `username` varchar(32) NOT NULL,
+  `user_name` char(16) NOT NULL,
   `password` varchar(128) NOT NULL,
   `user_type` tinyint(3) unsigned NOT NULL DEFAULT 0 COMMENT '用户类型，1超级用户，0普通用户',
-  `avatar_url` varchar(256) DEFAULT NULL COMMENT '头像地址',
+  `avatar_name` varchar(256) NOT NULL DEFAULT 'null.jpg' COMMENT '头像名',
   `last_login_time` datetime DEFAULT NULL COMMENT '用户最后登录时间',
+  `comment` varchar(100) DEFAULT NULL COMMENT '备注',
+  `login_count` int(10) unsigned NOT NULL DEFAULT 0 COMMENT '登录次数',
+  `user_status` tinyint(3) unsigned NOT NULL DEFAULT 1 COMMENT '是否允许登录，1 允许',
+  `create_time` datetime NOT NULL DEFAULT curtime() COMMENT '创建时间',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `user_UN` (`username`),
-  UNIQUE KEY `user_username_IDX` (`username`) USING BTREE
+  UNIQUE KEY `users_user_name_IDX` (`user_name`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `vehicle1` (
@@ -35,5 +38,6 @@ CREATE TABLE IF NOT EXISTS `vehicle1` (
   `bty_sys_rated_consumption` int(11) DEFAULT NULL COMMENT '额定能量',
   `met_spd` int(11) DEFAULT NULL COMMENT '车速',
   `byt_ma_sys_state` int(11) DEFAULT NULL COMMENT '未知',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `vehicle1_timestamp_IDX` (`timestamp`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=167719 DEFAULT CHARSET=utf8 COMMENT='vehicle_id: 4F37195C1A908CFBE0532932A8C0EECB';
