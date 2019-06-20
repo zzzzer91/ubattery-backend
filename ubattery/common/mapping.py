@@ -4,7 +4,7 @@
 
 # 表名到实际名的转换
 TABLE_TO_NAME = {
-    'vehicle1': '4F37195C1A908CFBE0532932A8C0EECB'
+    'yutong_vehicle1': '4F37195C1A908CFBE0532932A8C0EECB'
 }
 
 # 表中字段名到实际名的转换
