@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   UNIQUE KEY `users_user_name_IDX` (`user_name`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `vehicle1` (
+CREATE TABLE IF NOT EXISTS `yutong_vehicle1` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `province` varchar(100) DEFAULT NULL COMMENT '省',
   `city` varchar(100) DEFAULT NULL COMMENT '市',
