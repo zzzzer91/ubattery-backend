@@ -122,7 +122,7 @@ def login():
 
         # 更新登录时间
         user.last_login_time = now
-        user.id += 1
+        user.login_count += 1
         db.session.commit()
 
     # session 是一个 dict ，它用于储存横跨请求的值。
