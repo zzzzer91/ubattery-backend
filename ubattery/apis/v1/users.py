@@ -1,14 +1,16 @@
 from flask import jsonify, request, abort
 from flask.views import MethodView
-from werkzeug.security import generate_password_hash
-from pymysql import IntegrityError
+from sqlalchemy.exc import IntegrityError
 
 from ubattery.blueprints.auth import super_user_required
-from ubattery.db import get_db
 from ubattery.common import checker
+
+from ubattery.extensions import db
+from ubattery.models import User
 
 
 class UsersAPI(MethodView):
+    """超级管理员对普通用户的相关操作"""
 
     # 只有超级管理员才有权限
     decorators = [super_user_required]
@@ -16,29 +18,17 @@ class UsersAPI(MethodView):
     def get(self):
         """获取普通用户列表"""
 
-        db = get_db()
-        with db.cursor() as cursor:
-            cursor.execute(
-                'SELECT '
-                'user_name, '
-                'DATE_FORMAT(last_login_time, \'%Y-%m-%d %H:%i:%s\'), '
-                'comment, '
-                'login_count, '
-                'user_status, '
-                'DATE_FORMAT(create_time, \'%Y-%m-%d %H:%i:%s\') '
-                'FROM users WHERE user_type != 1'
-            )
-            rows = cursor.fetchall()
+        users = User.query.filter(User.type != 1).all()
 
         data = []
-        for row in rows:
+        for user in users:
             data.append({
-                'userName': row[0],
-                'lastLoginTime': row[1],
-                'comment': row[2],
-                'loginCount': row[3],
-                'userStatus': True if row[4] == 1 else False,
-                'createTime': row[5]
+                'userName': user.name,
+                'lastLoginTime': user.last_login_time,
+                'comment': user.comment,
+                'loginCount': user.login_count,
+                'userStatus': True if user.status == 1 else False,
+                'createTime': user.create_time
             })
 
         return jsonify({
@@ -63,21 +53,16 @@ class UsersAPI(MethodView):
         if len(comment) > 64:
             abort(500)
 
-        db = get_db()
-        with db.cursor() as cursor:
-            try:
-                cursor.execute(
-                    'INSERT INTO users '
-                    '(user_name, password, comment) '
-                    'VALUES (%s, %s, %s)',
-                    (user_name, generate_password_hash(password), comment)
-                )
-            except IntegrityError:
-                return jsonify({
-                    'status': False,
-                    'data': '用户已存在！'
-                })
-            db.commit()
+        user = User(name=user_name, comment=comment)
+        user.set_password(password)
+        db.session.add(user)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            return jsonify({
+                'status': False,
+                'data': '用户已存在！'
+            })
 
         return jsonify({
             'status': True,
@@ -85,6 +70,7 @@ class UsersAPI(MethodView):
         })
 
     def put(self, user_name):
+        """设置用户资料"""
 
         data = request.get_json()
 
@@ -97,16 +83,10 @@ class UsersAPI(MethodView):
             abort(500)
         user_status = int(user_status)
 
-        db = get_db()
-        with db.cursor() as cursor:
-            cursor.execute(
-                'UPDATE users '
-                'set comment = %s, '
-                'user_status = %s '
-                'WHERE user_name = %s',
-                (comment, user_status, user_name)
-            )
-            db.commit()
+        user = User.query.filter_by(name=user_name).first()
+        user.comment = comment
+        user.status = user_status
+        db.session.commit()
 
         return jsonify({
             'status': True,

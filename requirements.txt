@@ -5,3 +5,5 @@ flask
 gunicorn
 eventlet
 pymysql
+sqlalchemy
+flask-sqlalchemy

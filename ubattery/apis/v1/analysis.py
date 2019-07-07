@@ -1,7 +1,7 @@
 from flask import jsonify, request, abort
 from flask.views import MethodView
 
-from ubattery.db import get_db
+from ubattery.extensions import db
 from ubattery.blueprints.auth import login_required
 from ubattery.common.mapping import TABLE_TO_NAME, LABEL_TO_NAME
 from ubattery.common.checker import RE_DATETIME_CHECKER
@@ -38,23 +38,22 @@ class AnalysisAPI(MethodView):
         for k in need_params.split(','):
             col_names.append(LABEL_TO_NAME[k])  # 会过滤不合法参数名
 
-        with get_db().cursor() as cursor:
-            cursor.execute(
-                'SELECT '
-                'DATE_FORMAT(timestamp, \'%%Y-%%m-%%d %%H:%%i:%%s\'),'
-                f'{need_params} '
-                f'FROM {data_come_from} '
-                'WHERE timestamp >= %s '
-                'ORDER BY timestamp '
-                'LIMIT %s',
-                (start_date, data_limit)
-            )
-            rows = cursor.fetchall()
-            data = {
-                'colNames': col_names,
-                'rows': rows,
-                'rowCount': len(rows)
-            }
+        rows = db.session.execute(
+            'SELECT '
+            'DATE_FORMAT(timestamp, \'%Y-%m-%d %H:%i:%s\'),'
+            f'{need_params} '
+            f'FROM {data_come_from} '
+            'WHERE timestamp >= :start_date '
+            'ORDER BY timestamp '
+            'LIMIT :data_limit',
+            {'start_date': start_date, 'data_limit': data_limit}
+        )
+        rows = [tuple(row) for row in rows]
+        data = {
+            'colNames': col_names,
+            'rows': rows,
+            'rowCount': len(rows)
+        }
 
         status = True
         if len(rows) == 0:
