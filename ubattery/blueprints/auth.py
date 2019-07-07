@@ -142,7 +142,7 @@ def login():
             'userType': user.type,
             'avatarName': user.avatar_name,
             'lastLoginTime': user.last_login_time,
-            'loginCount': user.login_count + 1
+            'loginCount': user.login_count
         }
     })
 
