@@ -8,6 +8,20 @@
 $ ./setup.sh
 ```
 
+## 创建配置文件
+
+1、先在当前目录下创建文件夹 *instance* 及 *instance/media*。
+
+2、创建配置文件 *instance/config.py*，并做如下配置：
+
+```python
+# 用于加密 cookie 中的 session id
+# 输 `python -c 'import os; print(os.urandom(16))'` 生成
+SECRET_KEY = b'<随机字符串>'
+# MySQL
+SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:<密码>@localhost:3306/<数据库名>'
+```
+
 ## 启动数据库（docker）
 
 ```bash
@@ -20,7 +34,7 @@ $ docker-compose up
 $ flask initdb
 ```
 
-## 启动
+## 启动 flask
 
 ```bash
 $ flask run
