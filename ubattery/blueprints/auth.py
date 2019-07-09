@@ -167,6 +167,6 @@ def logout():
 def get_avatar(filename):
     """获取用户头像"""
 
-    base_dir = os.path.join(current_app.instance_path, current_app.config['AVATAR_PATH'])
+    base_dir = os.path.join(current_app.instance_path, 'media')
 
     return send_from_directory(base_dir, filename)
