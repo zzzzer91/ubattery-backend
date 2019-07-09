@@ -22,8 +22,7 @@ class User(db.Model):
     )
 
     # `default` 参数是在 python 中对数据填充默认值，不体现在表中
-    # `server_default` 会体现在表中，必须是字符串类型，或某些函数类型，
-    # 如 mysql 中的 `curtime()`
+    # `server_default` 会体现在表中，必须是字符串类型，或某些函数类型
     type = db.Column(
         mysql_type.TINYINT(unsigned=True), nullable=False, server_default='0',
         comment='用户类型，1超级用户，0普通用户'
@@ -54,8 +53,10 @@ class User(db.Model):
         comment='是否允许登录，1 允许，0 禁止'
     )
 
+    # 注意 MySQL 5.7 用 `func.CURRENT_TIMESTAMP()`
+    # 而不能用 `func.curtime()`，因为还不支持
     create_time = db.Column(
-        mysql_type.DATETIME, nullable=False, server_default=func.curtime(),
+        mysql_type.DATETIME, nullable=False, server_default=func.CURRENT_TIMESTAMP(),
         comment='创建时间'
     )
 
