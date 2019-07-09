@@ -5,19 +5,39 @@
 ## 安装依赖
 
 ```bash
-./setup.sh
+$ ./setup.sh
 ```
 
-## 生成数据库文件
+## 启动数据库（docker）
 
 ```bash
-flask init-db
+$ docker-compose up
+```
+
+## 生成 MySQL 表
+
+```bash
+$ flask initdb
 ```
 
 ## 启动
 
 ```bash
-flask run
+$ flask run
+```
+
+## 其他
+
+### 管理 MySQL
+
+浏览器访问 `127.0.0.1:8080` 端口。
+
+### 管理 Redis
+
+命令行输入：
+
+```bash
+$ docker run -it --rm --network <网络名> redis:5 redis-cli -h <redis 主机名>
 ```
 
 ## 设计原则
