@@ -35,7 +35,7 @@ def super_user_required(view):
 
     @functools.wraps(view)
     def wrapped_view(**kwargs):
-        if g.user is None or g.user.type != 1:  # 不是超级管理员
+        if g.user is None or g.user['type'] != 1:  # 不是超级管理员
             abort(403)
 
         return view(**kwargs)
@@ -64,8 +64,9 @@ def load_logged_in_user():
         g.user = user_cache.get(user_id)
         if g.user is None:
             # 使用 get()，不需要再执行 first()
-            g.user = User.query.get(user_id)
-            if g.user is not None:
+            user = User.query.get(user_id)
+            if user is not None:
+                g.user = {'name': user.name, 'type': user.type}
                 user_cache.set(user_id, g.user)
 
 
@@ -149,8 +150,7 @@ def login():
 @auth_bp.route('/logout')
 @login_required
 def logout():
-    """注销的时候需要把用户 id 从 session 中移除。
-    然后 load_logged_in_user 就不会在后继请求中载入用户了。
+    """注销的时候把用户 id 从 session 中移除。
     """
 
     session.clear()
