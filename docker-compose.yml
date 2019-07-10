@@ -20,6 +20,6 @@ services:
   redis:
     image: redis:5
     ports:
-      - 6379:6379
+      - 127.0.0.1:6379:6379
     volumes:
-      - ${REDIS_DATA_DIR}/data:/data  # 数据存储在 /data 下
+      - ${REDIS_DATA_DIR}/data:/data  # redis 数据存储在容器的 /data 下
