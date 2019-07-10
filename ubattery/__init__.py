@@ -88,7 +88,7 @@ def register_errorhandlers(app):
 
     # 注册 403 处理页面
     @app.errorhandler(403)
-    def page_not_found(error):
+    def forbidden(error):
         return render_template('403.html'), 403
 
     # 注册 404 处理页面
