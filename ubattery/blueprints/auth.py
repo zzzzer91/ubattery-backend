@@ -57,17 +57,16 @@ def load_logged_in_user():
     如果没有用户 id ，或者 id 不存在，那么 g.user 将会是 None 。
     """
 
-    user_name = session.get('user_name')
-
-    if user_name is None:
+    user_id = session.get('user_id')
+    if user_id is None:
         g.user = None
     else:
-        g.user = user_cache.get(user_name)
+        g.user = user_cache.get(user_id)
         if g.user is None:
-            g.user = User.query.filter_by(name=user_name).first()
-
+            # 使用 get()，不需要再执行 first()
+            g.user = User.query.get(user_id)
             if g.user is not None:
-                user_cache.set(user_name, g.user)
+                user_cache.set(user_id, g.user)
 
 
 @auth_bp.route('/login', methods=('GET', 'POST'))
@@ -76,15 +75,15 @@ def login():
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     if request.method == 'GET':
-        user_name = session.get('user_name')
+        user_id = session.get('user_id')
 
-        if user_name is None:
+        if user_id is None:
             return jsonify({
                 'status': False,
                 'data': None
             })
 
-        user: User = User.query.filter_by(name=user_name).first()
+        user: User = User.query.get(user_id)
 
         error = None
         if user is None:
@@ -133,7 +132,7 @@ def login():
     session.clear()
     # 现在用户的 id 已被储存在 session 中，可以被后续的请求使用。
     # 请每个请求的开头，如果用户已登录，那么其用户信息应当被载入，以使其可用于其他视图。
-    session['user_name'] = user.name
+    session['user_id'] = user.id
 
     return jsonify({
         'status': True,
@@ -167,6 +166,6 @@ def logout():
 def get_avatar(filename):
     """获取用户头像"""
 
-    base_dir = os.path.join(current_app.instance_path, 'media')
+    avatar_dir = os.path.join(current_app.instance_path, 'media/avatars')
 
-    return send_from_directory(base_dir, filename)
+    return send_from_directory(avatar_dir, filename)
