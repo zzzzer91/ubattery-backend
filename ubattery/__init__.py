@@ -56,9 +56,8 @@ def load_config(app, test_config):
         # 如果 *config.py* 存在的话。
         # 例如，当正式部署的时候，用于设置一个正式的 `SECRET_KEY` 。
         # 参数 `silent` 设为 `True`，使文件不存在时不报错
-        #app.config.from_pyfile('config.py', silent=True)
+        app.config.from_pyfile('config.py', silent=True)
         # 关闭 flask-sqlalchemy 警告
-        app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
     else:
         # 如果传入了 `test_config`，则会优先使用
