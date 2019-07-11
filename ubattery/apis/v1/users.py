@@ -1,11 +1,11 @@
-from flask import request, abort
+from flask import request, abort, url_for
 from flask.views import MethodView
 from sqlalchemy.exc import IntegrityError
 
 from ubattery.blueprints.auth import super_user_required
 from ubattery.common import checker
 
-from ubattery.extensions import db
+from ubattery.extensions import db, cache
 from ubattery.models import User
 
 
@@ -15,6 +15,7 @@ class UsersAPI(MethodView):
     # 只有超级管理员才有权限
     decorators = [super_user_required]
 
+    @cache.cached()
     def get(self):
         """获取普通用户列表，这里不能用缓存，因为一旦管理员添加或修改用户，会使用过期缓存。
         但也有解决办法，就是在添加或修改用户后，删除本块缓存。
@@ -66,6 +67,8 @@ class UsersAPI(MethodView):
                 'data': '用户已存在！'
             }
 
+        cache.delete(f'view/{url_for(".users_api")}')
+
         return {
             'status': True,
             'data': None
@@ -89,6 +92,8 @@ class UsersAPI(MethodView):
         user.comment = comment
         user.status = user_status
         db.session.commit()
+
+        cache.delete(f'view/{url_for(".users_api")}')
 
         return {
             'status': True,

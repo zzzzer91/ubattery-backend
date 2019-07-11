@@ -1,6 +1,7 @@
 from flask.views import MethodView
 
 from ubattery.blueprints.auth import login_required
+from ubattery.extensions import cache
 
 API_VERSION = 'v1'
 API_BASE_URL = f'/api/{API_VERSION}'
@@ -10,6 +11,7 @@ class IndexAPI(MethodView):
 
     decorators = [login_required]
 
+    @cache.cached()
     def get(self):
         return {
             'status': True,
