@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template, send_from_directory, current_app
 
+from ubattery.extensions import cache
+
 # Blueprint 是一种组织一组相关视图及其他代码的方式。
 # 与把视图及其他 代码直接注册到应用的方式不同，
 # 蓝图方式是把它们注册到蓝图，然后在工厂函数中 把蓝图注册到应用。
@@ -10,6 +12,7 @@ index_bp = Blueprint('index', __name__)
 
 
 @index_bp.route('/')
+@cache.cached()
 def index():
     return render_template('index.html')
 

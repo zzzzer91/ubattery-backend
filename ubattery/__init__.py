@@ -4,7 +4,7 @@ import click
 from flask import Flask, render_template
 
 from ubattery.json_encoder import MyJSONEncoder
-from ubattery.extensions import db
+from ubattery.extensions import db, cache
 from ubattery.blueprints.index import index_bp
 from ubattery.blueprints.auth import auth_bp
 from ubattery.apis import api_v1_bp
@@ -75,6 +75,7 @@ def load_config(app, test_config):
 def register_extensions(app):
 
     db.init_app(app)
+    cache.init_app(app, config={'CACHE_TYPE': 'redis', 'CACHE_REDIS_URL': 'redis://@localhost:6379/0'})
 
 
 def register_blueprints(app):
@@ -95,21 +96,32 @@ def register_apis(app):
 def register_errorhandlers(app):
 
     # 注册 403 处理页面
-    @app.errorhandler(403)
-    def forbidden(error):
-        return render_template('403.html'), 403
+    # @app.errorhandler(403)
+    # @cache.cached(key_prefix='forbidden')
+    # def forbidden(error):
+    #     return render_template('403.html'), 403
 
     # 注册 404 处理页面
+    # 缓存函数中的 key_prefix 参数，代表 key 名
     @app.errorhandler(404)
+    @cache.cached(key_prefix='errorhandler_page_not_found')
     def page_not_found(error):
         return render_template('404.html'), 404
 
 
 def register_commands(app):
+    """注册一些有用的命令，通过 `flask <命令名>` 调用。"""
 
-    @app.cli.command()
-    def initdb():
-        """初始化表"""
+    @app.cli.command('init-db')
+    def init_db():
+        """初始化表。"""
 
         db.create_all()
         click.echo('Initialized database.')
+
+    @app.cli.command('clear-cache')
+    def clear_cache():
+        """清理 Redis 中的缓存。"""
+
+        cache.clear()
+        click.echo('Cleared cache.')

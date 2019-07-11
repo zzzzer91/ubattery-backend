@@ -16,7 +16,9 @@ class UsersAPI(MethodView):
     decorators = [super_user_required]
 
     def get(self):
-        """获取普通用户列表"""
+        """获取普通用户列表，这里不能用缓存，因为一旦管理员添加或修改用户，会使用过期缓存。
+        但也有解决办法，就是在添加或修改用户后，删除本块缓存。
+        """
 
         users = User.query.filter(User.type != 1).all()
 
