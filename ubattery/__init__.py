@@ -24,6 +24,19 @@ def create_app(test_config=None):
         static_folder='./dist/assets'
     )
 
+    # `os.makedirs()` 可以确保 `app.instance_path` 存在。
+    # Flask 不会自动创建实例文件夹，但是必须确保创建这个文件夹，
+    # 因为 SQLite 数据库文件会被 保存在里面。
+    if not os.path.exists(app.instance_path):
+        os.mkdir(app.instance_path)
+
+    # 放置一些媒体文件，如图片，视频等
+    app.media_folder = os.path.join(app.instance_path, 'media')
+
+    # 放置用户上传头像的文件夹
+    app.avatar_folder = os.path.join(app.media_folder, 'avatars')
+
+    # 使用自己的 json 编码器，序列化 MySQL 某些不能直接 json 序列化的类型
     app.json_encoder = MyJSONEncoder
 
     load_config(app, test_config)
@@ -38,17 +51,14 @@ def create_app(test_config=None):
 
 
 def load_config(app, test_config):
-    # `os.makedirs()` 可以确保 `app.instance_path` 存在。
-    # Flask 不会自动创建实例文件夹，但是必须确保创建这个文件夹，
-    # 因为 SQLite 数据库文件会被 保存在里面。
-    if not os.path.exists(app.instance_path):
-        os.makedirs(app.instance_path)
 
     # `app.config.from_mapping()` 设置一个应用的 缺省配置
     app.config.from_mapping(
         # SECRET_KEY 是被 Flask 和扩展用于保证数据安全的。
         # 在开发过程中， 为了方便可以设置为 'dev' ，但是在发布的时候应当使用一个随机值来重载它。
-        SECRET_KEY='dev'
+        SECRET_KEY='dev',
+        # 关闭 flask-sqlalchemy 警告
+        SQLALCHEMY_TRACK_MODIFICATIONS=True
     )
 
     if test_config is None:
@@ -57,8 +67,6 @@ def load_config(app, test_config):
         # 例如，当正式部署的时候，用于设置一个正式的 `SECRET_KEY` 。
         # 参数 `silent` 设为 `True`，使文件不存在时不报错
         app.config.from_pyfile('config.py', silent=True)
-        # 关闭 flask-sqlalchemy 警告
-        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
     else:
         # 如果传入了 `test_config`，则会优先使用
         app.config.update(test_config)

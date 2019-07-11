@@ -1,5 +1,3 @@
-import os
-
 from flask import Blueprint, render_template, send_from_directory, current_app
 
 # Blueprint 是一种组织一组相关视图及其他代码的方式。
@@ -18,4 +16,4 @@ def index():
 
 @index_bp.route('/favicon.ico')
 def favicon():
-    return send_from_directory(os.path.join(current_app.root_path, 'dist'), 'favicon.ico')
+    return send_from_directory(current_app.template_folder, 'favicon.ico')
