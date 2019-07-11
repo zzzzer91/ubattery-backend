@@ -33,6 +33,7 @@ fi
 ENV_FILE="${ABSOLUTE_CURRENT_PATH}/.env"
 MYSQL_ROOT_PASSWORD=''
 if [ ! -e "${ENV_FILE}" ]; then
+    echo "# docker-compose.yml 中使用的环境变量" > ${ENV_FILE}
     read -p "输入 MySQL root 密码：" MYSQL_ROOT_PASSWORD
     echo "MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}" > ${ENV_FILE}
     echo "MYSQL_DATA_DIR=${INSTANCE_DIR}/database/mysql" >> ${ENV_FILE}
@@ -46,6 +47,7 @@ fi
 CONFIG_FILE="${INSTANCE_DIR}/config.py"
 MYSQL_DATABASE=''
 if [ ! -e "${CONFIG_FILE}" ]; then
+    echo "# flask 使用的一些敏感配置" > ${CONFIG_FILE}
     read -p "输入 MySQL 数据库名：" MYSQL_DATABASE
     echo "SECRET_KEY = $(python -c 'import os; print(os.urandom(16))')" > ${CONFIG_FILE}
     echo "SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:${MYSQL_ROOT_PASSWORD}@localhost:3306/${MYSQL_DATABASE}'" >> ${CONFIG_FILE}
