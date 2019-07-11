@@ -3,7 +3,7 @@ import os
 import click
 from flask import Flask, render_template
 
-from ubattery.common.json_encoder import MyJSONEncoder
+from ubattery.json_encoder import MyJSONEncoder
 from ubattery.extensions import db
 from ubattery.blueprints.index import index_bp
 from ubattery.blueprints.auth import auth_bp
