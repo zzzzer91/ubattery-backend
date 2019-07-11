@@ -2,7 +2,7 @@ import os
 import functools
 from datetime import datetime
 
-from flask import Blueprint, abort, session, g, request, jsonify, current_app, send_from_directory
+from flask import Blueprint, abort, session, g, request, current_app, send_from_directory
 from werkzeug.contrib.cache import SimpleCache
 
 from ubattery.extensions import db
@@ -79,10 +79,10 @@ def login():
         user_id = session.get('user_id')
 
         if user_id is None:
-            return jsonify({
+            return {
                 'status': False,
                 'data': None
-            })
+            }
 
         user: User = User.query.get(user_id)
 
@@ -93,10 +93,10 @@ def login():
             error = '该用户已被禁止登录！'
 
         if error:
-            return jsonify({
+            return {
                 'status': False,
                 'data': error
-            })
+            }
 
     else:
         data = request.get_json()
@@ -115,10 +115,10 @@ def login():
             error = '该用户已被禁止登录！'
 
         if error:
-            return jsonify({
+            return {
                 'status': False,
                 'data': error
-            })
+            }
 
         # 更新登录时间
         user.last_login_time = now
@@ -135,7 +135,7 @@ def login():
     # 请每个请求的开头，如果用户已登录，那么其用户信息应当被载入，以使其可用于其他视图。
     session['user_id'] = user.id
 
-    return jsonify({
+    return {
         'status': True,
         'data': {
             'userName': user.name,
@@ -144,7 +144,7 @@ def login():
             'lastLoginTime': user.last_login_time,
             'loginCount': user.login_count
         }
-    })
+    }
 
 
 @auth_bp.route('/logout')
@@ -155,10 +155,10 @@ def logout():
 
     session.clear()
 
-    return jsonify({
+    return {
         'status': True,
         'data': None
-    })
+    }
 
 
 @auth_bp.route('/media/avatars/<string:filename>')

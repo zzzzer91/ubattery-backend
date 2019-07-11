@@ -1,4 +1,3 @@
-from flask import jsonify
 from flask.views import MethodView
 
 from ubattery.blueprints.auth import login_required
@@ -12,7 +11,7 @@ class IndexAPI(MethodView):
     decorators = [login_required]
 
     def get(self):
-        return jsonify({
+        return {
             'status': True,
             'api_version': API_VERSION,
             'api_base_url': API_BASE_URL,
@@ -23,4 +22,4 @@ class IndexAPI(MethodView):
                 'status': 'bool',
                 'data': 'List[Dict]'
             }
-        })
+        }

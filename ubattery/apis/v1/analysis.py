@@ -1,4 +1,4 @@
-from flask import jsonify, request, abort
+from flask import request, abort
 from flask.views import MethodView
 
 from ubattery.extensions import db
@@ -60,7 +60,7 @@ class AnalysisAPI(MethodView):
             status = False
             data = '未查询到相关数据！'
 
-        return jsonify({
+        return {
             'status': status,
             'data': data
-        })
+        }

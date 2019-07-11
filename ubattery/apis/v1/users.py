@@ -1,4 +1,4 @@
-from flask import jsonify, request, abort
+from flask import request, abort
 from flask.views import MethodView
 from sqlalchemy.exc import IntegrityError
 
@@ -31,10 +31,10 @@ class UsersAPI(MethodView):
                 'createTime': user.create_time
             })
 
-        return jsonify({
+        return {
             'status': True,
             'data': data
-        })
+        }
 
     def post(self):
         """添加新用户"""
@@ -59,15 +59,15 @@ class UsersAPI(MethodView):
         try:
             db.session.commit()
         except IntegrityError:
-            return jsonify({
+            return {
                 'status': False,
                 'data': '用户已存在！'
-            })
+            }
 
-        return jsonify({
+        return {
             'status': True,
             'data': None
-        })
+        }
 
     def put(self, user_name):
         """设置用户资料"""
@@ -88,7 +88,7 @@ class UsersAPI(MethodView):
         user.status = user_status
         db.session.commit()
 
-        return jsonify({
+        return {
             'status': True,
             'data': None
-        })
+        }
