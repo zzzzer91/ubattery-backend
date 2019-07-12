@@ -25,8 +25,7 @@ def create_app(test_config=None):
     )
 
     # `os.makedirs()` 可以确保 `app.instance_path` 存在。
-    # Flask 不会自动创建实例文件夹，但是必须确保创建这个文件夹，
-    # 因为 SQLite 数据库文件会被 保存在里面。
+    # Flask 不会自动创建实例文件夹
     if not os.path.exists(app.instance_path):
         os.mkdir(app.instance_path)
 
@@ -75,7 +74,7 @@ def load_config(app, test_config):
 def register_extensions(app):
 
     db.init_app(app)
-    cache.init_app(app, config={'CACHE_TYPE': 'redis', 'CACHE_REDIS_URL': 'redis://@localhost:6379/0'})
+    cache.init_app(app)
 
 
 def register_blueprints(app):

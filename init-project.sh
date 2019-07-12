@@ -43,8 +43,14 @@ if [ ! -e "${CONFIG_FILE}" ]; then
     read -p "输入 MySQL 数据库名：" mysql_database
 
     echo "# flask 使用的一些敏感配置" > ${CONFIG_FILE}
+    echo "# 用于加密 cookie 中的 session id" > ${CONFIG_FILE}
     echo "SECRET_KEY = $(python -c 'import os; print(os.urandom(16))')" > ${CONFIG_FILE}
+    echo "# MySQL" > ${CONFIG_FILE}
     echo "SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:${mysql_root_password}@localhost:3306/${mysql_database}'" >> ${CONFIG_FILE}
+    echo "# Cache settings" > ${CONFIG_FILE}
+    echo "CACHE_TYPE = 'redis'" > ${CONFIG_FILE}
+    echo "CACHE_REDIS_URL = 'redis://@localhost:6379/0'" > ${CONFIG_FILE}
+
     echo "${CONFIG_FILE} 生成完毕！"
 else
     echo "${CONFIG_FILE} 已存在！"
@@ -56,6 +62,7 @@ if [ ! -e "${ENV_FILE}" ]; then
     echo "MYSQL_ROOT_PASSWORD=${mysql_root_password}" > ${ENV_FILE}
     echo "MYSQL_DATA_DIR=${INSTANCE_DIR}/database/mysql" >> ${ENV_FILE}
     echo "REDIS_DATA_DIR=${INSTANCE_DIR}/database/redis" >> ${ENV_FILE}
+
     echo "${ENV_FILE} 生成完毕！"
 else
     echo "${ENV_FILE} 已存在！"
