@@ -1,9 +1,9 @@
-from flask import request, abort, jsonify
+from flask import request, abort
 from flask.views import MethodView
 
 from ubattery.extensions import mysql, mongo
 from ubattery.blueprints.auth import permission_required
-from ubattery.common.mapping import TABLE_TO_NAME, LABEL_TO_NAME
+from ubattery.common.mapping import MYSQL_TABLE_TO_NAME, BASE_LABEL_TO_NAME
 from ubattery.common.checker import RE_DATETIME_CHECKER
 
 
@@ -14,7 +14,7 @@ def _get_base_data():
 
     data_come_from = args.get('dataComeFrom')
     # 因为 data_come_from 会拼接成 sql 语句，为防 sql 注入，须判断下是不是正确表名
-    if data_come_from not in TABLE_TO_NAME:
+    if data_come_from not in MYSQL_TABLE_TO_NAME:
         abort(500)
 
     start_date = args.get('startDate')
@@ -33,11 +33,11 @@ def _get_base_data():
     col_names = ['时间']
     # 把字段名转换成实际名，同时也是进行 sql 过滤
     for k in need_params.split(','):
-        col_names.append(LABEL_TO_NAME[k])  # 会过滤不合法参数名
+        col_names.append(BASE_LABEL_TO_NAME[k])  # 会过滤不合法参数名
 
     rows = mysql.session.execute(
         'SELECT '
-        'DATE_FORMAT(timestamp, \'%Y-%m-%d %H:%i:%s\'),'
+        'timestamp,'
         f'{need_params} '
         f'FROM {data_come_from} '
         'WHERE timestamp >= :start_date '
@@ -66,7 +66,16 @@ def _get_base_data():
 def _get_charging_process_data():
     """获取充电过程数据。"""
 
-    return jsonify(list(mongo.db['charging_process'].find(projection={'_id': 0})))
+    rows = list(mongo.db['charging_process'].find(projection={'_id': 0}))
+    data = {
+        'rows': rows,
+        'rowCount': len(rows)
+    }
+
+    return {
+        'status': True,
+        'data': data
+    }
 
 
 class MiningAPI(MethodView):
