@@ -1,7 +1,7 @@
 import functools
 from datetime import datetime
 
-from flask import Blueprint, abort, session, request, current_app, send_from_directory
+from flask import Blueprint, abort, session, request, current_app
 
 from ubattery.extensions import db, cache
 from ubattery.models import User
@@ -39,7 +39,7 @@ def permission_required(permission=None):
 
     :param permission: 指定了用户需要的权限，None 代表普通用户。
     """
-    
+
     def decorate(view):
         @functools.wraps(view)
         def wrapper(*args, **kwargs):
@@ -140,10 +140,3 @@ def logout():
         'status': True,
         'data': None
     }
-
-
-@auth_bp.route('/media/avatars/<string:filename>')
-def get_avatar(filename):
-    """获取用户头像。"""
-
-    return send_from_directory(current_app.avatar_folder, filename)

@@ -19,4 +19,13 @@ def index():
 
 @index_bp.route('/favicon.ico')
 def favicon():
+    """获取网页图标。"""
+
     return send_from_directory(current_app.template_folder, 'favicon.ico')
+
+
+@index_bp.route('/media/avatars/<string:filename>')
+def get_avatar(filename):
+    """获取用户头像。"""
+
+    return send_from_directory(current_app.avatar_folder, filename)
