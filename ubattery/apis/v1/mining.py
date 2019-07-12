@@ -1,7 +1,7 @@
-from flask import request, abort
+from flask import request, abort, jsonify
 from flask.views import MethodView
 
-from ubattery.extensions import db
+from ubattery.extensions import db, mongo
 from ubattery.blueprints.auth import permission_required
 from ubattery.common.mapping import TABLE_TO_NAME, LABEL_TO_NAME
 from ubattery.common.checker import RE_DATETIME_CHECKER
@@ -63,6 +63,10 @@ def _get_base_data():
     }
 
 
+def _get_charging_process_data():
+    return jsonify(list(mongo.db['charging_process'].find(projection={'_id': 0})))
+
+
 class MiningAPI(MethodView):
 
     decorators = (permission_required(),)
@@ -71,4 +75,6 @@ class MiningAPI(MethodView):
         data = None
         if name == 'base':
             data = _get_base_data()
+        elif name == 'charging_process':
+            data = _get_charging_process_data()
         return data

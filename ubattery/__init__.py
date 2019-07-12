@@ -80,7 +80,15 @@ def load_config(app, test_config):
 def register_extensions(app):
 
     db.init_app(app)
+
     mongo.init_app(app)
+    # flask-mongo 有点小问题，
+    # 如果在 URI 中配置了数据库，那么认证的时候用的是配置的数据库，而不是 admin，
+    # 这会导致失败。
+    # 但不配置，db 就会为 None
+    # 所以这里我们要手动指定下
+    mongo.db = mongo.cx[app.config['MONGO_DATABASE']]
+
     cache.init_app(app)
 
 
