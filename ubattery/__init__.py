@@ -4,7 +4,7 @@ import click
 from flask import Flask, render_template
 
 from ubattery.json_encoder import MyJSONEncoder
-from ubattery.extensions import db, cache
+from ubattery.extensions import db, mongo, cache
 from ubattery.blueprints.index import index_bp
 from ubattery.blueprints.auth import auth_bp
 from ubattery.apis import api_v1_bp
@@ -75,6 +75,7 @@ def load_config(app, test_config):
 def register_extensions(app):
 
     db.init_app(app)
+    mongo.init_app(app)
     cache.init_app(app)
 
 

@@ -38,6 +38,8 @@ def permission_required(permission=None):
     """用户需要相关权限才能操作。
 
     :param permission: 指定了用户需要的权限，None 代表普通用户。
+
+    TODO 权限名规范化。
     """
 
     def decorate(view):

@@ -38,35 +38,41 @@ fi
 # 生成 config.py
 mysql_root_password=''
 mysql_database=''
-if [ ! -e "${CONFIG_FILE}" ]; then
-    read -p "输入 MySQL root 密码：" mysql_root_password
-    read -p "输入 MySQL 数据库名：" mysql_database
+mongo_root_password=''
+mongo_database=''
+read -p "输入 MySQL root 密码：" mysql_root_password
+read -p "输入 MySQL 数据库名：" mysql_database
+read -p "输入 Mongo root 密码：" mongo_root_password
+read -p "输入 Mongo 数据库名：" mongo_database
 
-    echo "# flask 使用的一些敏感配置" > ${CONFIG_FILE}
-    echo "# 用于加密 cookie 中的 session id" > ${CONFIG_FILE}
-    echo "SECRET_KEY = $(python -c 'import os; print(os.urandom(16))')" > ${CONFIG_FILE}
-    echo "# MySQL" > ${CONFIG_FILE}
-    echo "SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:${mysql_root_password}@localhost:3306/${mysql_database}'" >> ${CONFIG_FILE}
-    echo "# Cache settings" > ${CONFIG_FILE}
-    echo "CACHE_TYPE = 'redis'" > ${CONFIG_FILE}
-    echo "CACHE_REDIS_URL = 'redis://@localhost:6379/0'" > ${CONFIG_FILE}
+echo "# flask 使用的一些敏感配置" > ${CONFIG_FILE}
+echo "# 用于加密 cookie 中的 session id" >> ${CONFIG_FILE}
+echo "SECRET_KEY = $(python -c 'import os; print(os.urandom(16))')" >> ${CONFIG_FILE}
+echo "# MySQL" >> ${CONFIG_FILE}
+echo "SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:${mysql_root_password}@localhost:3306/${mysql_database}'" >> ${CONFIG_FILE}
+echo "SQLALCHEMY_POOL_SIZE = 5" >> ${CONFIG_FILE}
+echo "# MongoDB" >> ${CONFIG_FILE}
+echo "MONGO_URI = 'mongodb://root:${mongo_root_password}@localhost:27017/${mongo_database}'" >> ${CONFIG_FILE}
+echo "# Cache settings" >> ${CONFIG_FILE}
+echo "CACHE_TYPE = 'redis'" >> ${CONFIG_FILE}
+echo "CACHE_REDIS_URL = 'redis://@localhost:6379/0'" >> ${CONFIG_FILE}
 
-    echo "${CONFIG_FILE} 生成完毕！"
-else
-    echo "${CONFIG_FILE} 已存在！"
-fi
+echo "${CONFIG_FILE} 生成完毕！"
 
 # 生成 .env
-if [ ! -e "${ENV_FILE}" ]; then
-    echo "# docker-compose.yml 中使用的环境变量" > ${ENV_FILE}
-    echo "MYSQL_ROOT_PASSWORD=${mysql_root_password}" > ${ENV_FILE}
-    echo "MYSQL_DATA_DIR=${INSTANCE_DIR}/database/mysql" >> ${ENV_FILE}
-    echo "REDIS_DATA_DIR=${INSTANCE_DIR}/database/redis" >> ${ENV_FILE}
+echo "# docker-compose.yml 中使用的环境变量" > ${ENV_FILE}
+echo "# 注意值两边的单双引号，会被当作值的一部分，这在 docker-compose 中会出现问题" >> ${ENV_FILE}
+echo "# MySQL" >> ${ENV_FILE}
+echo "MYSQL_ROOT_PASSWORD=${mysql_root_password}" >> ${ENV_FILE}
+echo "MYSQL_DATA_DIR=${INSTANCE_DIR}/database/mysql" >> ${ENV_FILE}
+echo "# Mongo" >> ${ENV_FILE}
+echo "MONGO_INITDB_ROOT_USERNAME=root" >> ${ENV_FILE}
+echo "MONGO_INITDB_ROOT_PASSWORD=${mongo_root_password}" >> ${ENV_FILE}
+echo "MONGO_DATA_DIR=${INSTANCE_DIR}/database/mongo" >> ${ENV_FILE}
+echo "# Redis" >> ${ENV_FILE}
+echo "REDIS_DATA_DIR=${INSTANCE_DIR}/database/redis" >> ${ENV_FILE}
 
-    echo "${ENV_FILE} 生成完毕！"
-else
-    echo "${ENV_FILE} 已存在！"
-fi
+echo "${ENV_FILE} 生成完毕！"
 
 # 安装项目 Python 依赖
 if [ -e "${PYTHON_REQUIREMENTS_FILE}" ]; then
