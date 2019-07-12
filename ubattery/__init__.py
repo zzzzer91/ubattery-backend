@@ -96,13 +96,13 @@ def register_apis(app):
 def register_errorhandlers(app):
 
     # 注册 403 处理页面
-    # @app.errorhandler(403)
-    # @cache.cached(key_prefix='forbidden')
-    # def forbidden(error):
-    #     return render_template('403.html'), 403
+    # 缓存函数中的 key_prefix 参数，代表 key 名
+    @app.errorhandler(403)
+    @cache.cached(key_prefix='errorhandler_forbidden')
+    def forbidden(error):
+        return render_template('403.html'), 403
 
     # 注册 404 处理页面
-    # 缓存函数中的 key_prefix 参数，代表 key 名
     @app.errorhandler(404)
     @cache.cached(key_prefix='errorhandler_page_not_found')
     def page_not_found(error):
