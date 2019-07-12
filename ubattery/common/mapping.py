@@ -3,12 +3,12 @@
 """
 
 # 表名到动力汽车 ID 的转换
-TABLE_TO_NAME = {
+MYSQL_TABLE_TO_NAME = {
     'yutong_vehicle1': '4F37195C1A908CFBE0532932A8C0EECB'
 }
 
 # 表中字段名到实际名的转换
-LABEL_TO_NAME = {
+BASE_LABEL_TO_NAME = {
     'timestamp': '时间',
     'bty_t_vol': '总电压',
     'bty_t_curr': '总电流',
@@ -27,7 +27,7 @@ LABEL_TO_NAME = {
     'min_v_e_core_num': '最低电压电池号',
 }
 
-NAME_TO_LABEL = {
+BASE_NAME_TO_LABEL = {
     '时间': 'timestamp',
     '总电压': 'bty_t_vol',
     '总电流': 'bty_t_curr',
@@ -45,3 +45,5 @@ NAME_TO_LABEL = {
     '最高电压电池号': 'max_v_e_core_num',
     '最低电压电池号': 'min_v_e_core_num'
 }
+
+CHARGING_PROCESS_LABEL_TO_NAME = {}
