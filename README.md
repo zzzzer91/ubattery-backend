@@ -36,7 +36,7 @@ $ flask run
 命令行输入：
 
 ```bash
-$ docker run -it --rm --network <网络名> redis:5 redis-cli -h <redis 主机名>
+$ ./redis-cli.sh
 ```
 
 ## 设计原则
