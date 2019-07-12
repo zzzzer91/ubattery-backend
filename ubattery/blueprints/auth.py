@@ -1,78 +1,61 @@
 import functools
 from datetime import datetime
 
-from flask import Blueprint, abort, session, g, request, current_app, send_from_directory
-from werkzeug.contrib.cache import SimpleCache
+from flask import Blueprint, abort, session, request, current_app, send_from_directory
 
-from ubattery.extensions import db
+from ubattery.extensions import db, cache
 from ubattery.models import User
 
 auth_bp = Blueprint('auth', __name__)
 
 
-def login_required(view):
-    """用户登录以后才能进行相关操作。
-    在每个视图中可以使用 装饰器 来完成这个工作。
-    装饰器返回一个新的视图，该视图包含了传递给装饰器的原视图。
-    新的函数检查用户 是否已载入。
-    如果已载入，那么就继续正常执行原视图，否则就重定向到登录页面。
-    """
+@cache.memoize()
+def _get_user(user_id: int):
+    """返回用户信息，使用了缓存。"""
 
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if g.user is None:
-            abort(403)
-
-        return view(**kwargs)
-
-    return wrapped_view
+    # 使用 get()，不需要再执行 first()
+    user = User.query.get(user_id)
+    if user is None:
+        return None
+    return {'name': user.name, 'type': user.type}
 
 
-def super_user_required(view):
-    """只有超级管理员才能操作
-    """
-
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if g.user is None or g.user['type'] != 1:  # 不是超级管理员
-            abort(403)
-
-        return view(**kwargs)
-
-    return wrapped_view
-
-
-# 用于缓存用户信息
-user_cache = SimpleCache()
-
-# bp.before_app_request 注册一个在视图函数之前运行的函数，不论其 URL 是什么。
-# before_app_request 全局的
-# before_request 是当前蓝图的
-@auth_bp.before_app_request
-def load_logged_in_user():
-    """load_logged_in_user 检查用户 id 是否已经储存在 session 中，
-    并从数据库中获取用户数据，然后储存在 g.user 中。
-    g.user 的持续时间比请求要长。
-    如果没有用户 id ，或者 id 不存在，那么 g.user 将会是 None 。
-    """
+def get_current_user():
+    """从 session 中 user_id 获取用户信息。"""
 
     user_id = session.get('user_id')
+    current_app.logger.debug(f'user_id: {user_id}')
     if user_id is None:
-        g.user = None
-    else:
-        g.user = user_cache.get(user_id)
-        if g.user is None:
-            # 使用 get()，不需要再执行 first()
-            user = User.query.get(user_id)
-            if user is not None:
-                g.user = {'name': user.name, 'type': user.type}
-                user_cache.set(user_id, g.user)
+        return None
+    user = _get_user(user_id)
+    # 该用户 id 不存在，删除其缓存
+    if user is None:
+        cache.delete_memoized(_get_user, user_id)
+    return user
+
+
+def permission_required(permission=None):
+    """用户需要相关权限才能操作。
+
+    :param permission: 指定了用户需要的权限，None 代表普通用户。
+    """
+    
+    def decorate(view):
+        @functools.wraps(view)
+        def wrapper(*args, **kwargs):
+            current_user = get_current_user()
+            if current_user is None:
+                abort(403)
+            if permission is not None and current_user['type'] != permission:
+                # 不符合权限
+                abort(403)
+            return view(*args, **kwargs)
+        return wrapper
+    return decorate
 
 
 @auth_bp.route('/login', methods=('GET', 'POST'))
 def login():
-
-    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     if request.method == 'GET':
         user_id = session.get('user_id')
@@ -120,7 +103,7 @@ def login():
             }
 
         # 更新登录时间
-        user.last_login_time = now
+        user.last_login_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         user.login_count += 1
         db.session.commit()
 
@@ -147,10 +130,9 @@ def login():
 
 
 @auth_bp.route('/logout')
-@login_required
+@permission_required()
 def logout():
-    """注销的时候把用户 id 从 session 中移除。
-    """
+    """注销的时候把用户 id 从 session 中移除。"""
 
     session.clear()
 
@@ -161,8 +143,7 @@ def logout():
 
 
 @auth_bp.route('/media/avatars/<string:filename>')
-@login_required
 def get_avatar(filename):
-    """获取用户头像"""
+    """获取用户头像。"""
 
     return send_from_directory(current_app.avatar_folder, filename)

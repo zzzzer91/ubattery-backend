@@ -2,14 +2,14 @@ from flask import request, abort
 from flask.views import MethodView
 
 from ubattery.extensions import db
-from ubattery.blueprints.auth import login_required
+from ubattery.blueprints.auth import permission_required
 from ubattery.common.mapping import TABLE_TO_NAME, LABEL_TO_NAME
 from ubattery.common.checker import RE_DATETIME_CHECKER
 
 
 class AnalysisAPI(MethodView):
 
-    decorators = [login_required]
+    decorators = (permission_required(),)
 
     def get(self):
 

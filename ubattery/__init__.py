@@ -56,8 +56,9 @@ def load_config(app, test_config):
         # SECRET_KEY 是被 Flask 和扩展用于保证数据安全的。
         # 在开发过程中， 为了方便可以设置为 'dev' ，但是在发布的时候应当使用一个随机值来重载它。
         SECRET_KEY='dev',
-        # 关闭 flask-sqlalchemy 警告
-        SQLALCHEMY_TRACK_MODIFICATIONS=True
+        # 	如果设置成 True (默认情况)，Flask-SQLAlchemy 将会追踪对象的修改并且发送信号。
+        # 	这需要额外的内存， 如果不必要的可以禁用它。
+        SQLALCHEMY_TRACK_MODIFICATIONS=False
     )
 
     if test_config is None:

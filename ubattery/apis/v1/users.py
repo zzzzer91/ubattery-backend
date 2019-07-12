@@ -2,7 +2,7 @@ from flask import request, abort, url_for
 from flask.views import MethodView
 from sqlalchemy.exc import IntegrityError
 
-from ubattery.blueprints.auth import super_user_required
+from ubattery.blueprints.auth import permission_required
 from ubattery.common import checker
 
 from ubattery.extensions import db, cache
@@ -13,7 +13,7 @@ class UsersAPI(MethodView):
     """超级管理员对普通用户的相关操作"""
 
     # 只有超级管理员才有权限
-    decorators = [super_user_required]
+    decorators = (permission_required(1),)
 
     @cache.cached()
     def get(self):
