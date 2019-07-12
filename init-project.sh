@@ -50,11 +50,9 @@ echo "# 用于加密 cookie 中的 session id" >> ${CONFIG_FILE}
 echo "SECRET_KEY = $(python -c 'import os; print(os.urandom(16))')" >> ${CONFIG_FILE}
 echo "# MySQL" >> ${CONFIG_FILE}
 echo "SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:${mysql_root_password}@localhost:3306/${mysql_database}'" >> ${CONFIG_FILE}
-echo "SQLALCHEMY_POOL_SIZE = 5" >> ${CONFIG_FILE}
 echo "# MongoDB" >> ${CONFIG_FILE}
 echo "MONGO_URI = 'mongodb://root:${mongo_root_password}@localhost:27017/${mongo_database}'" >> ${CONFIG_FILE}
 echo "# Cache settings" >> ${CONFIG_FILE}
-echo "CACHE_TYPE = 'redis'" >> ${CONFIG_FILE}
 echo "CACHE_REDIS_URL = 'redis://@localhost:6379/0'" >> ${CONFIG_FILE}
 
 echo "${CONFIG_FILE} 生成完毕！"

@@ -56,14 +56,19 @@ def load_config(app, test_config):
         # SECRET_KEY 是被 Flask 和扩展用于保证数据安全的。
         # 在开发过程中， 为了方便可以设置为 'dev' ，但是在发布的时候应当使用一个随机值来重载它。
         SECRET_KEY='dev',
-        # 	如果设置成 True (默认情况)，Flask-SQLAlchemy 将会追踪对象的修改并且发送信号。
-        # 	这需要额外的内存， 如果不必要的可以禁用它。
-        SQLALCHEMY_TRACK_MODIFICATIONS=False
+        # 如果设置成 True (默认情况)，Flask-SQLAlchemy 将会追踪对象的修改并且发送信号。
+        # 这需要额外的内存， 如果不必要的可以禁用它。
+        SQLALCHEMY_TRACK_MODIFICATIONS=False,
+        # # 连接池大小，默认 5
+        SQLALCHEMY_POOL_SIZE=5,
+        # 缓存实例，这里使用 redis
+        CACHE_TYPE='redis'
     )
 
     if test_config is None:
         # `app.config.from_pyfile()` 使用 *config.py* 中的值来重载缺省配置，
         # 如果 *config.py* 存在的话。
+        # 该文件存放敏感配置，不敏感的放在本文件就行了。
         # 例如，当正式部署的时候，用于设置一个正式的 `SECRET_KEY` 。
         # 参数 `silent` 设为 `True`，使文件不存在时不报错
         app.config.from_pyfile('config.py', silent=True)
