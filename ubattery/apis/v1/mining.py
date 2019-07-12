@@ -1,7 +1,7 @@
 from flask import request, abort, jsonify
 from flask.views import MethodView
 
-from ubattery.extensions import db, mongo
+from ubattery.extensions import mysql, mongo
 from ubattery.blueprints.auth import permission_required
 from ubattery.common.mapping import TABLE_TO_NAME, LABEL_TO_NAME
 from ubattery.common.checker import RE_DATETIME_CHECKER
@@ -35,7 +35,7 @@ def _get_base_data():
     for k in need_params.split(','):
         col_names.append(LABEL_TO_NAME[k])  # 会过滤不合法参数名
 
-    rows = db.session.execute(
+    rows = mysql.session.execute(
         'SELECT '
         'DATE_FORMAT(timestamp, \'%Y-%m-%d %H:%i:%s\'),'
         f'{need_params} '
@@ -64,6 +64,8 @@ def _get_base_data():
 
 
 def _get_charging_process_data():
+    """获取充电过程数据。"""
+
     return jsonify(list(mongo.db['charging_process'].find(projection={'_id': 0})))
 
 

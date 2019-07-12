@@ -3,7 +3,7 @@ from datetime import datetime
 
 from flask import Blueprint, abort, session, request, current_app
 
-from ubattery.extensions import db, cache
+from ubattery.extensions import mysql, cache
 from ubattery.models import User
 
 auth_bp = Blueprint('auth', __name__)
@@ -107,7 +107,7 @@ def login():
         # 更新登录时间
         user.last_login_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         user.login_count += 1
-        db.session.commit()
+        mysql.session.commit()
 
     # session 是一个 dict ，它用于储存横跨请求的值。
     # 当验证 成功后，用户的 id 被储存于一个新的会话中。

@@ -4,7 +4,7 @@ import click
 from flask import Flask, render_template
 
 from ubattery.json_encoder import MyJSONEncoder
-from ubattery.extensions import db, mongo, cache
+from ubattery.extensions import mysql, mongo, cache
 from ubattery.blueprints.index import index_bp
 from ubattery.blueprints.auth import auth_bp
 from ubattery.apis import api_v1_bp
@@ -79,7 +79,7 @@ def load_config(app, test_config):
 
 def register_extensions(app):
 
-    db.init_app(app)
+    mysql.init_app(app)
 
     mongo.init_app(app)
     # flask-mongo 有点小问题，
@@ -130,7 +130,7 @@ def register_commands(app):
     def init_db():
         """初始化表。"""
 
-        db.create_all()
+        mysql.create_all()
         click.echo('Initialized database.')
 
     @app.cli.command('clear-cache')

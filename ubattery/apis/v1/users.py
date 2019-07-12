@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 
 from ubattery.blueprints.auth import permission_required
 from ubattery.common import checker, permission
-from ubattery.extensions import db, cache
+from ubattery.extensions import mysql, cache
 from ubattery.models import User
 
 
@@ -57,9 +57,9 @@ class UsersAPI(MethodView):
 
         user = User(name=user_name, comment=comment)
         user.set_password(password)
-        db.session.add(user)
+        mysql.session.add(user)
         try:
-            db.session.commit()
+            mysql.session.commit()
         except IntegrityError:
             return {
                 'status': False,
@@ -90,7 +90,7 @@ class UsersAPI(MethodView):
         user = User.query.filter_by(name=user_name).first()
         user.comment = comment
         user.status = user_status
-        db.session.commit()
+        mysql.session.commit()
 
         cache.delete(f'view/{url_for(".users_api")}')
 
