@@ -1,7 +1,7 @@
 from flask import Blueprint
 
 from .index import IndexAPI, API_VERSION, API_BASE_URL
-from .analysis import AnalysisAPI
+from .mining import MiningAPI
 from .users import UsersAPI
 
 api_v1_bp = Blueprint(f'api_{API_VERSION}', __name__, url_prefix=API_BASE_URL)
@@ -14,10 +14,10 @@ api_v1_bp.add_url_rule(
     methods=['GET']
 )
 
-analysis_api = AnalysisAPI.as_view('analysis_api')
+mining_api = MiningAPI.as_view('mining_api')
 api_v1_bp.add_url_rule(
-    '/analysis',
-    view_func=analysis_api,
+    '/mining/<string:name>',
+    view_func=mining_api,
     methods=['GET']
 )
 
