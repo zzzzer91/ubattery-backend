@@ -2,8 +2,8 @@ from flask import request, abort, url_for
 from flask.views import MethodView
 from sqlalchemy.exc import IntegrityError
 
-from ubattery.blueprints.auth import permission_required
 from ubattery.common import checker, permission
+from ubattery.blueprints.auth import permission_required
 from ubattery.extensions import mysql, cache
 from ubattery.models import User
 
