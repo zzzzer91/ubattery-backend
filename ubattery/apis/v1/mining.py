@@ -81,6 +81,23 @@ def _get_charging_process_data():
     }
 
 
+def _get_working_condition_data():
+    """获取工况数据。"""
+
+    data = list(mongo.db['working_condition'].find(projection={'_id': 0}))
+
+    if len(data) == 0:
+        return {
+            'status': False,
+            'data': '未查询到相关数据！'
+        }
+
+    return {
+        'status': True,
+        'data': data
+    }
+
+
 class MiningAPI(MethodView):
 
     decorators = (permission_required(),)
@@ -91,4 +108,6 @@ class MiningAPI(MethodView):
             data = _get_base_data()
         elif name == 'charging-process':
             data = _get_charging_process_data()
+        elif name == 'working-condition':
+            data = _get_working_condition_data()
         return data
