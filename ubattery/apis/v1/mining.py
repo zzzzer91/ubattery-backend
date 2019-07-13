@@ -66,11 +66,9 @@ def _get_base_data():
 def _get_charging_process_data():
     """获取充电过程数据。"""
 
-    rows = list(mongo.db['charging_process'].find(projection={'_id': 0}))
-    data = {
-        'rows': rows,
-        'rowCount': len(rows)
-    }
+    data = list(mongo.db['charging_process'].find(
+        projection={'_id': 0, 'first_id': 0, 'last_id': 0}
+    ))
 
     return {
         'status': True,
@@ -86,6 +84,6 @@ class MiningAPI(MethodView):
         data = None
         if name == 'base':
             data = _get_base_data()
-        elif name == 'charging_process':
+        elif name == 'charging-process':
             data = _get_charging_process_data()
         return data
