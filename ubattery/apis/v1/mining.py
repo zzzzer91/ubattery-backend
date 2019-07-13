@@ -1,10 +1,9 @@
 from flask import request, abort
 from flask.views import MethodView
 
+from ubattery.common import checker, mapping
 from ubattery.extensions import mysql, mongo
 from ubattery.blueprints.auth import permission_required
-from ubattery.common.mapping import MYSQL_TABLE_TO_NAME, BASE_LABEL_TO_NAME
-from ubattery.common.checker import RE_DATETIME_CHECKER
 
 
 def _get_base_data():
@@ -14,11 +13,11 @@ def _get_base_data():
 
     data_come_from = args.get('dataComeFrom')
     # 因为 data_come_from 会拼接成 sql 语句，为防 sql 注入，须判断下是不是正确表名
-    if data_come_from not in MYSQL_TABLE_TO_NAME:
+    if data_come_from not in mapping.MYSQL_TABLE_TO_NAME:
         abort(500)
 
     start_date = args.get('startDate')
-    if start_date is None or not RE_DATETIME_CHECKER.match(start_date):
+    if start_date is None or not checker.RE_DATETIME_CHECKER.match(start_date):
         abort(500)
 
     # 必须是 int 类型，不然 pymysql 进行类型转换时会出现错误
@@ -33,7 +32,7 @@ def _get_base_data():
     col_names = ['时间']
     # 把字段名转换成实际名，同时也是进行 sql 过滤
     for k in need_params.split(','):
-        col_names.append(BASE_LABEL_TO_NAME[k])  # 会过滤不合法参数名
+        col_names.append(mapping.BASE_LABEL_TO_NAME[k])  # 会过滤不合法参数名
 
     rows = mysql.session.execute(
         'SELECT '
@@ -48,17 +47,17 @@ def _get_base_data():
     rows = [tuple(row) for row in rows]
     data = {
         'colNames': col_names,
-        'rows': rows,
-        'rowCount': len(rows)
+        'rows': rows
     }
 
-    status = True
     if len(rows) == 0:
-        status = False
-        data = '未查询到相关数据！'
+        return {
+            'status': False,
+            'data': '未查询到相关数据！'
+        }
 
     return {
-        'status': status,
+        'status': True,
         'data': data
     }
 
@@ -69,6 +68,12 @@ def _get_charging_process_data():
     data = list(mongo.db['charging_process'].find(
         projection={'_id': 0, 'first_id': 0, 'last_id': 0}
     ))
+
+    if len(data) == 0:
+        return {
+            'status': False,
+            'data': '未查询到相关数据！'
+        }
 
     return {
         'status': True,
