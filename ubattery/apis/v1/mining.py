@@ -62,44 +62,10 @@ def _get_base_data():
     }
 
 
-def _get_charging_process_data():
-    """获取充电过程数据。"""
+def _get_battery_statistic_data(name):
+    """获取电池的一些统计数据。"""
 
-    data = mongo.db['battery_statistic'].find_one({'_id': 'charging_process'})['data']
-
-    if len(data) == 0:
-        return {
-            'status': False,
-            'data': '未查询到相关数据！'
-        }
-
-    return {
-        'status': True,
-        'data': data
-    }
-
-
-def _get_working_condition_data():
-    """获取工况数据。"""
-
-    data = mongo.db['battery_statistic'].find_one({'_id': 'working_condition'})['data']
-
-    if len(data) == 0:
-        return {
-            'status': False,
-            'data': '未查询到相关数据！'
-        }
-
-    return {
-        'status': True,
-        'data': data
-    }
-
-
-def _get_battery_statistic_data():
-    """获取电池统计数据。"""
-
-    data = mongo.db['battery_statistic'].find_one({'_id': 'battery_statistic'})['data']
+    data = mongo.db['battery_statistic'].find_one({'_id': name})['data']
 
     if len(data) == 0:
         return {
@@ -118,15 +84,15 @@ class MiningAPI(MethodView):
     decorators = (permission_required(),)
 
     def get(self, name):
-        data = None
+        json = None
         if name == 'base':
-            data = _get_base_data()
+            json = _get_base_data()
         elif name == 'charging-process':
-            data = _get_charging_process_data()
+            json = _get_battery_statistic_data('charging-process')
         elif name == 'working-condition':
-            data = _get_working_condition_data()
+            json = _get_battery_statistic_data('working-condition')
         elif name == 'battery-statistic':
-            data = _get_battery_statistic_data()
+            json = _get_battery_statistic_data('battery-statistic')
         else:
             abort(404)
-        return data
+        return json
