@@ -65,9 +65,7 @@ def _get_base_data():
 def _get_charging_process_data():
     """获取充电过程数据。"""
 
-    data = list(mongo.db['charging_process'].find(
-        projection={'_id': 0, 'first_id': 0, 'last_id': 0}
-    ))
+    data = mongo.db['battery_statistic'].find_one({'_id': 'charging_process'})['data']
 
     if len(data) == 0:
         return {
@@ -84,7 +82,24 @@ def _get_charging_process_data():
 def _get_working_condition_data():
     """获取工况数据。"""
 
-    data = list(mongo.db['working_condition'].find(projection={'_id': 0}))
+    data = mongo.db['battery_statistic'].find_one({'_id': 'working_condition'})['data']
+
+    if len(data) == 0:
+        return {
+            'status': False,
+            'data': '未查询到相关数据！'
+        }
+
+    return {
+        'status': True,
+        'data': data
+    }
+
+
+def _get_battery_statistic_data():
+    """获取电池统计数据。"""
+
+    data = mongo.db['battery_statistic'].find_one({'_id': 'battery_statistic'})['data']
 
     if len(data) == 0:
         return {
@@ -110,4 +125,8 @@ class MiningAPI(MethodView):
             data = _get_charging_process_data()
         elif name == 'working-condition':
             data = _get_working_condition_data()
+        elif name == 'battery-statistic':
+            data = _get_battery_statistic_data()
+        else:
+            abort(404)
         return data
