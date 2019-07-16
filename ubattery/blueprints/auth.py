@@ -24,7 +24,7 @@ def get_current_user():
     """从 session 中 user_id 获取用户信息。"""
 
     user_id = session.get('user_id')
-    current_app.logger.debug(f'user_id: {user_id}')
+    # current_app.logger.debug(f'user_id: {user_id}')
     if user_id is None:
         return None
     user = _get_user(user_id)

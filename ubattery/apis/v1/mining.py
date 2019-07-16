@@ -88,11 +88,11 @@ class MiningAPI(MethodView):
         if name == 'base':
             json = _get_base_data()
         elif name == 'charging-process':
-            json = _get_battery_statistic_data('charging-process')
+            json = _get_battery_statistic_data('charging_process')
         elif name == 'working-condition':
-            json = _get_battery_statistic_data('working-condition')
+            json = _get_battery_statistic_data('working_condition')
         elif name == 'battery-statistic':
-            json = _get_battery_statistic_data('battery-statistic')
+            json = _get_battery_statistic_data('battery_statistic')
         else:
             abort(404)
         return json
