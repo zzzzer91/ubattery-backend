@@ -1,12 +1,15 @@
 import functools
+from collections import namedtuple
 from datetime import datetime
 
-from flask import Blueprint, abort, session, request, current_app
+from flask import Blueprint, abort, session, request
 
 from ubattery.extensions import mysql, cache
 from ubattery.models import User
 
 auth_bp = Blueprint('auth', __name__)
+
+UserSimpleInfo = namedtuple('UserSimpleInfo', 'name type')
 
 
 @cache.memoize()
@@ -17,7 +20,7 @@ def _get_user(user_id: int):
     user = User.query.get(user_id)
     if user is None:
         return None
-    return {'name': user.name, 'type': user.type}
+    return UserSimpleInfo(user.name, user.type)
 
 
 def get_current_user():
@@ -48,7 +51,7 @@ def permission_required(permission=None):
             current_user = get_current_user()
             if current_user is None:
                 abort(403)
-            if permission is not None and current_user['type'] != permission:
+            if permission is not None and current_user.type != permission:
                 # 不符合权限
                 abort(403)
             return view(*args, **kwargs)
