@@ -23,7 +23,7 @@ services:
       - ${MONGO_DATA_DIR}:/data/db
 
   redis:
-    image: redis:5
+    image: redis:5-alpine
     ports:
       - 127.0.0.1:6379:6379
     volumes:
