@@ -5,9 +5,10 @@ click
 gunicorn
 eventlet
 pymysql
-pymongo
 sqlalchemy
+pymongo
 redis
+celery
 
 Flask-SQLAlchemy
 Flask-Caching
