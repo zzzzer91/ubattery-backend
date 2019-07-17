@@ -4,7 +4,7 @@ import click
 from flask import Flask, render_template
 
 from ubattery.json_encoder import MyJSONEncoder
-from ubattery.extensions import mysql, mongo, cache
+from ubattery.extensions import mysql, mongo, cache, celery
 from ubattery.blueprints.index import index_bp
 from ubattery.blueprints.auth import auth_bp
 from ubattery.apis import api_v1_bp
@@ -50,6 +50,7 @@ def create_app(test_config=None):
 
 
 def load_config(app, test_config):
+    """载入配置。"""
 
     # `app.config.from_mapping()` 设置一个应用的 缺省配置
     app.config.from_mapping(
@@ -78,9 +79,12 @@ def load_config(app, test_config):
 
 
 def register_extensions(app):
+    """注册拓展。"""
 
+    # flask-sqlalchemy
     mysql.init_app(app)
 
+    # flask-pymongo
     mongo.init_app(app)
     # flask-mongo 有点小问题，
     # 如果在 URI 中配置了数据库，那么认证的时候用的是配置的数据库，而不是 admin，
@@ -89,25 +93,29 @@ def register_extensions(app):
     # 所以这里我们要手动指定下
     mongo.db = mongo.cx[app.config['MONGO_DATABASE']]
 
+    # flask-caching
     cache.init_app(app)
+
+    # celery
+    celery.main = app.name
+    celery.conf.update(app.config)
 
 
 def register_blueprints(app):
+    """注册一些基本组件蓝图。"""
 
     app.register_blueprint(index_bp)
-    # 本来蓝图 index 的 url 默认是 '/index'，
-    # 把它改为 '/'
-    app.add_url_rule('/', endpoint='index')
-
     app.register_blueprint(auth_bp)
 
 
 def register_apis(app):
+    """注册 API 蓝图。"""
 
     app.register_blueprint(api_v1_bp)
 
 
 def register_errorhandlers(app):
+    """注册错误处理。"""
 
     # 注册 403 处理页面
     # 缓存函数中的 key_prefix 参数，代表 key 名
