@@ -11,10 +11,9 @@ def _get_base_data():
 
     args = request.args
 
-    data_come_from = args.get('dataComeFrom')
     # 因为 data_come_from 会拼接成 sql 语句，为防 sql 注入，须判断下是不是正确表名
-    if data_come_from not in mapping.MYSQL_TABLE_TO_NAME:
-        abort(500)
+    # 映射失败会自动抛出 500
+    data_come_from, name_to_field = mapping.MYSQL_NAME_TO_TABLE[args.get('dataComeFrom')]
 
     start_date = args.get('startDate')
     if start_date is None or not checker.RE_DATETIME_CHECKER.match(start_date):
@@ -29,28 +28,25 @@ def _get_base_data():
     need_params = args.get('needParams', '').strip()
     if need_params == '':
         abort(500)
-    col_names = ['时间']
+    col_names = []
     # 把字段名转换成实际名，同时也是进行 sql 过滤
     for k in need_params.split(','):
-        col_names.append(mapping.BASE_LABEL_TO_NAME[k])  # 会过滤不合法参数名
+        col_names.append(name_to_field[k])  # 会过滤不合法参数名
+    col_names = ', '.join(col_names)
 
     rows = mysql.session.execute(
         'SELECT '
         'timestamp,'
-        f'{need_params} '
+        f'{col_names} '
         f'FROM {data_come_from} '
         'WHERE timestamp >= :start_date '
         'ORDER BY timestamp '
         'LIMIT :data_limit',
         {'start_date': start_date, 'data_limit': data_limit}
     )
-    rows = [tuple(row) for row in rows]
-    data = {
-        'colNames': col_names,
-        'rows': rows
-    }
+    data = [tuple(row) for row in rows]
 
-    if len(rows) == 0:
+    if len(data) == 0:
         return {
             'status': False,
             'data': '未查询到相关数据！'
