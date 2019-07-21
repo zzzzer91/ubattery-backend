@@ -12,4 +12,4 @@ mongo = PyMongo()
 # 缓存的默认过期时间是 300 秒
 cache = Cache()
 
-celery = Celery()
+celery = Celery('ubattery', broker='redis://localhost:6379/0', backend='redis://localhost:6379/0')

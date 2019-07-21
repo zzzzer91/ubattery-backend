@@ -12,3 +12,9 @@ docker-compose up -d
 # --log-file <file_name> 输出到指定文件
 # -D 后台运行
 gunicorn wsgi:app -w 3 -b unix:/tmp/ubattery.sock -k eventlet -D
+
+# 创建后台任务执行者
+# -A 指定 celery 实例位置
+# -D 后台运行 celery worker
+celery -A ubattery.extensions.celery worker --concurrency=4 -D
+

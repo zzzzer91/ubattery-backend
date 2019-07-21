@@ -96,10 +96,6 @@ def register_extensions(app):
     # flask-caching
     cache.init_app(app)
 
-    # celery
-    celery.main = app.name
-    celery.conf.update(app.config)
-
 
 def register_blueprints(app):
     """注册一些基本组件蓝图。"""
