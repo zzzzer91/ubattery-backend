@@ -61,7 +61,10 @@ def _get_base_data():
 def _get_battery_statistic_data(name):
     """获取电池的一些统计数据。"""
 
-    data = mongo.db['battery_statistic'].find_one({'_id': name})['data']
+    data = mongo.db['battery_statistic'].find_one(
+        {'_id': name},
+        projection={'_id': False, 'data': True}
+    )['data']
 
     if len(data) == 0:
         return {
