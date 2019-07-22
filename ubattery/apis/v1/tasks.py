@@ -151,7 +151,7 @@ def compute_task(self,
         {'taskId': task_id},
         {'$set': {
             'taskStatus': '完成',
-            'comment': f'用时 {used_time} s',
+            'comment': f'计算用时 {used_time} s',
             'data': data
         }}
     )
@@ -173,6 +173,12 @@ class TasksAPI(MethodView):
             }
 
         data = _get_task(task_id)
+        if data is None:
+            return {
+                'status': False,
+                'data': '无可绘制数据！',
+            }
+
         return {
             'status': True,
             'data': data,
