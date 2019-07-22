@@ -19,7 +19,7 @@ def _get_task_list() -> List[Dict]:
 
 
 @cache.memoize()
-def _get_task(task_id: str) -> Union[List[Dict], Dict]:
+def _get_task(task_id: str) -> List[Dict]:
     """获取单个任务数据"""
 
     return mongo.db['tasks'].find_one(
@@ -71,6 +71,33 @@ def _compute_charging_process_data(rows: List) -> List[Dict]:
     return data
 
 
+def _compute_working_condition_data(rows: List) -> List[Dict]:
+    pass
+
+
+def _compute_battery_statistic_data(rows: List) -> List[Dict]:
+    """计算电池统计数据。"""
+
+    battery_statistic = {}
+    for row in rows:
+        key1 = row[0]
+        if key1 is not None:
+            battery_statistic.setdefault(key1, [0, 0])[0] += 1
+        key2 = row[1]
+        if key2 is not None:
+            battery_statistic.setdefault(key2, [0, 0])[1] += 1
+
+    temp = sorted(battery_statistic.items(), key=lambda x: x[0])
+    data = []
+    for number, (max_t_count, min_t_count) in temp:
+        data.append({
+            'number': number,
+            'max_t_count': max_t_count,
+            'min_t_count': min_t_count
+        })
+    return data
+
+
 # 如果你不能马上使用 Celery 实例，用 `shared_task` 代替 task，如 Django 中。
 # `ignore_result=True` 该任务不会将结果保存在 redis，提高性能
 @celery.task(bind=True, ignore_result=True)
@@ -101,6 +128,12 @@ def compute_task(self,
     if task_name_chinese == '充电过程':
         need_params = 'bty_t_vol, bty_t_curr, battery_soc, id, byt_ma_sys_state'
         compute_alg = _compute_charging_process_data
+    elif task_name_chinese == '工况':
+        need_params = ''
+        compute_alg = _compute_working_condition_data
+    elif task_name_chinese == '电池统计':
+        need_params = 'max_t_s_b_num, min_t_s_b_num'
+        compute_alg = _compute_battery_statistic_data
     else:
         return
 
@@ -209,6 +242,10 @@ class TasksAPI(MethodView):
 
         if task_name == 'charging-process':
             task_name_chinese = '充电过程'
+        # elif task_name == 'working-condition':
+        #     task_name_chinese = '工况'
+        elif task_name == 'battery-statistic':
+            task_name_chinese = '电池统计'
         else:
             return {
                 'status': False,
