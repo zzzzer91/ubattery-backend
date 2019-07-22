@@ -23,5 +23,5 @@ YUTONG_NAME_TO_FIELD = {
 }
 
 MYSQL_NAME_TO_TABLE = {
-    '宇通新能源车1': ('yutong_vehicle1', YUTONG_NAME_TO_FIELD)
+    '宇通_4F37195C1A908CFBE0532932A8C0EECB': ('yutong_vehicle1', YUTONG_NAME_TO_FIELD)
 }
