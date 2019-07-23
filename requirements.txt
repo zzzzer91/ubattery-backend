@@ -13,3 +13,4 @@ celery
 Flask-SQLAlchemy
 Flask-Caching
 Flask-PyMongo
+Flask-SocketIO
