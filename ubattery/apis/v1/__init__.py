@@ -47,7 +47,7 @@ api_v1_bp.add_url_rule(
 api_v1_bp.add_url_rule(
     '/tasks/<string:task_id>',
     view_func=tasks_api,
-    methods=['GET']
+    methods=['GET', 'DELETE']
 )
 api_v1_bp.add_url_rule(
     '/tasks/<string:task_name>',

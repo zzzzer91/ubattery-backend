@@ -1,9 +1,10 @@
 import time
 from datetime import datetime
-from typing import Dict, List, Union
+from typing import Dict, List
 
 from flask import request, abort
 from flask.views import MethodView
+from bson import ObjectId
 
 from ubattery.common import permission, mapping, checker
 from ubattery.extensions import celery, mongo, mysql, cache
@@ -13,7 +14,10 @@ from ubattery.blueprints.auth import permission_required
 def _get_task_list() -> List[Dict]:
     """这个函数不太好用缓存，因为会频繁创建任务。"""
 
-    data = list(mongo.db['tasks'].find(projection={'_id': False, 'data': False}))
+    data = []
+    for item in mongo.db['tasks'].find(projection={'data': False}):
+        item['taskId'] = item.pop('_id')
+        data.append(item)
     data.reverse()
     return data
 
@@ -23,7 +27,7 @@ def _get_task(task_id: str) -> List[Dict]:
     """获取单个任务数据"""
 
     return mongo.db['tasks'].find_one(
-        {'taskId': task_id},
+        {'_id': ObjectId(task_id)},
         projection={'_id': False, 'data': True}
     )['data']
 
@@ -100,9 +104,8 @@ def _compute_battery_statistic_data(rows: List) -> List[Dict]:
 
 # 如果你不能马上使用 Celery 实例，用 `shared_task` 代替 task，如 Django 中。
 # `ignore_result=True` 该任务不会将结果保存在 redis，提高性能
-@celery.task(bind=True, ignore_result=True)
-def compute_task(self,
-                 task_name_chinese: str,
+@celery.task(ignore_result=True)
+def compute_task(task_name_chinese: str,
                  data_come_from: str,
                  request_params: str,
                  create_time: str,
@@ -123,8 +126,6 @@ def compute_task(self,
     :param request_params: 请求的参数，用于入库
     """
 
-    task_id = self.request.id.replace('-', '')
-
     if task_name_chinese == '充电过程':
         need_params = 'bty_t_vol, bty_t_curr, battery_soc, id, byt_ma_sys_state'
         compute_alg = _compute_charging_process_data
@@ -139,11 +140,10 @@ def compute_task(self,
 
     start = time.perf_counter()
 
-    mongo.db['tasks'].insert_one({
+    result = mongo.db['tasks'].insert_one({
         'taskName': task_name_chinese,
         'dataComeFrom': data_come_from,
         'requestParams': request_params,
-        'taskId': task_id,
         'createTime': create_time,
         'taskStatus': '执行中',
         'comment': None,
@@ -167,7 +167,7 @@ def compute_task(self,
 
     if rows.rowcount == 0:
         mongo.db['tasks'].update_one(
-            {'taskId': task_id},
+            {'_id': result.inserted_id},
             {'$set': {
                 'taskStatus': '失败',
                 'comment': '可计算数据为空',
@@ -181,7 +181,7 @@ def compute_task(self,
     used_time = round(time.perf_counter() - start, 2)
 
     mongo.db['tasks'].update_one(
-        {'taskId': task_id},
+        {'_id': result.inserted_id},
         {'$set': {
             'taskStatus': '完成',
             'comment': f'计算用时 {used_time} s',
@@ -207,6 +207,7 @@ class TasksAPI(MethodView):
 
         data = _get_task(task_id)
         if data is None:
+            cache.delete_memoized(_get_task, task_id)
             return {
                 'status': False,
                 'data': '无可绘制数据！',
@@ -253,7 +254,8 @@ class TasksAPI(MethodView):
             }
 
         # 交给 celery 计算
-        task = compute_task.delay(
+        # 返回一个 task，可以拿到任务 Id 等属性
+        compute_task.delay(
             task_name_chinese, data_come_from, request_params, create_time,
             data_come_from_map, start_date, end_date,
         )
@@ -264,9 +266,15 @@ class TasksAPI(MethodView):
                 'taskName': task_name_chinese,
                 'dataComeFrom': data_come_from,
                 'requestParams': request_params,
-                'taskId': task.id.replace('-', ''),
                 'createTime': create_time,
                 'taskStatus': '执行中',
                 'comment': None,
             },
+        }
+
+    def delete(self, task_id):
+        mongo.db['tasks'].delete_one({'_id': ObjectId(task_id)})
+        return {
+            'status': False,
+            'data': None,
         }
