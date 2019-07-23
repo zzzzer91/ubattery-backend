@@ -4,7 +4,7 @@ import click
 from flask import Flask, render_template
 
 from ubattery.json_encoder import MyJSONEncoder
-from ubattery.extensions import mysql, mongo, cache, socketio
+from ubattery.extensions import mysql, mongo, cache
 from ubattery.blueprints.index import index_bp
 from ubattery.blueprints.auth import auth_bp
 from ubattery.apis import api_v1_bp
@@ -95,9 +95,6 @@ def register_extensions(app):
 
     # flask-caching
     cache.init_app(app)
-
-    # flask-socketio
-    socketio.init_app(app)
 
 
 def register_blueprints(app):
