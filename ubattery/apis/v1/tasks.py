@@ -153,7 +153,7 @@ def compute_task(self,
             {'_id': task_id},
             {'$set': {
                 'taskStatus': '失败',
-                'comment': '可计算数据为空',
+                'comment': '无可用数据',
             }}
         )
         return
@@ -167,7 +167,7 @@ def compute_task(self,
         {'_id': task_id},
         {'$set': {
             'taskStatus': '完成',
-            'comment': f'计算用时 {used_time} s',
+            'comment': f'用时 {used_time}s',
             'data': data
         }}
     )
