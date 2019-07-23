@@ -173,7 +173,7 @@ def compute_task(self,
     )
 
 
-def _get_task_list() -> List[Dict]:
+def get_task_list() -> List[Dict]:
     """这个函数不太好用缓存，因为会频繁创建任务。"""
 
     data = []
@@ -185,7 +185,7 @@ def _get_task_list() -> List[Dict]:
 
 
 @cache.memoize()
-def _get_task(task_id: str) -> List[Dict]:
+def get_task(task_id: str) -> List[Dict]:
     """获取单个任务数据"""
 
     return mongo.db['tasks'].find_one(
@@ -203,15 +203,15 @@ class TasksAPI(MethodView):
 
         # 获取所有任务
         if task_id is None:
-            data = _get_task_list()
+            data = get_task_list()
             return {
                 'status': True,
                 'data': data,
             }
 
-        data = _get_task(task_id)
+        data = get_task(task_id)
         if data is None:
-            cache.delete_memoized(_get_task, task_id)
+            cache.delete_memoized(get_task, task_id)
             return {
                 'status': False,
                 'data': '无可绘制数据！',
