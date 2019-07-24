@@ -6,6 +6,7 @@
 
 ```bash
 $ ./init-project.sh
+```
 
 ## 启动数据库（docker）
 
@@ -13,16 +14,16 @@ $ ./init-project.sh
 $ docker-compose up
 ```
 
-## 生成 MySQL 表
+## 生成 MySQL 表（可选）
 
 ```bash
 $ flask initdb
 ```
 
-## 启动 flask
+## 启动项目
 
 ```bash
-$ flask run
+$ ./run.sh
 ```
 
 ## 其他
