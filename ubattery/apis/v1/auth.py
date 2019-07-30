@@ -4,7 +4,7 @@ from flask import session, request
 
 from ubattery.extensions import mysql
 from ubattery.models import User
-from .permission import permission_required
+from ubattery.permission import permission_required
 
 
 def login():

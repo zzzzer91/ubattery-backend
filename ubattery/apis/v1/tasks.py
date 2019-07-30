@@ -5,9 +5,11 @@ from typing import Dict, List
 from flask import request, abort
 from flask.views import MethodView
 
-from ubattery import mapping, checker
+from ubattery.mapping import MYSQL_NAME_TO_TABLE
+from ubattery.checker import RE_DATETIME_CHECKER
 from ubattery.extensions import celery, mongo, mysql, cache
-from .permission import permission_required, SUPER_USER
+from ubattery.permission import permission_required, SUPER_USER
+from ubattery.status_code import INTERNAL_SERVER_ERROR
 
 
 def _compute_charging_process_data(rows: List) -> List[Dict]:
@@ -228,7 +230,7 @@ class TasksAPI(MethodView):
         jd = request.get_json()
         # 参数合法性检验
         data_come_from = jd.get('dataComeFrom')
-        data_come_from_map, _ = mapping.MYSQL_NAME_TO_TABLE[data_come_from]
+        data_come_from_map, _ = MYSQL_NAME_TO_TABLE[data_come_from]
         all_data = jd.get('allData')
         start_date = None
         end_date = None
@@ -236,11 +238,11 @@ class TasksAPI(MethodView):
         request_params = '所有数据'
         if all_data is None:
             start_date = jd.get('startDate')
-            if start_date is None or not checker.RE_DATETIME_CHECKER.match(start_date):
-                abort(500)
+            if start_date is None or not RE_DATETIME_CHECKER.match(start_date):
+                abort(INTERNAL_SERVER_ERROR)
             end_date = jd.get('endDate')
-            if end_date is None or not checker.RE_DATETIME_CHECKER.match(end_date):
-                abort(500)
+            if end_date is None or not RE_DATETIME_CHECKER.match(end_date):
+                abort(INTERNAL_SERVER_ERROR)
             request_params = f'{start_date} - {end_date}'
 
         create_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')

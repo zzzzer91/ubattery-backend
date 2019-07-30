@@ -1,9 +1,12 @@
 from flask import request, abort
 from flask.views import MethodView
 
-from ubattery import mapping, checker
+
+from ubattery.mapping import MYSQL_NAME_TO_TABLE
+from ubattery.checker import RE_DATETIME_CHECKER
 from ubattery.extensions import mysql, mongo
-from .permission import permission_required
+from ubattery.permission import permission_required
+from ubattery.status_code import NOT_FOUND, INTERNAL_SERVER_ERROR
 
 
 def _get_base_data():
@@ -12,22 +15,24 @@ def _get_base_data():
     args = request.args
 
     # 因为 data_come_from 会拼接成 sql 语句，为防 sql 注入，须判断下是不是正确表名
-    # 映射失败会自动抛出 500
-    data_come_from, name_to_field = mapping.MYSQL_NAME_TO_TABLE[args.get('dataComeFrom')]
+    arg = args.get('dataComeFrom')
+    if arg not in MYSQL_NAME_TO_TABLE:
+        abort(INTERNAL_SERVER_ERROR)
+    data_come_from, name_to_field = MYSQL_NAME_TO_TABLE[arg]
 
     start_date = args.get('startDate')
-    if start_date is None or not checker.RE_DATETIME_CHECKER.match(start_date):
-        abort(500)
+    if start_date is None or not RE_DATETIME_CHECKER.match(start_date):
+        abort(INTERNAL_SERVER_ERROR)
 
     # 必须是 int 类型，不然 pymysql 进行类型转换时会出现错误
     # 如果是 None，int 转换时会自动抛出 500 错误
     data_limit = int(args.get('dataLimit'))
     if data_limit > 10000:  # 限制每次获取的数据
-        abort(500)
+        abort(INTERNAL_SERVER_ERROR)
 
     need_params = args.get('needParams', '').strip()
     if need_params == '':
-        abort(500)
+        abort(INTERNAL_SERVER_ERROR)
     col_names = []
     # 把字段名转换成实际名，同时也是进行 sql 过滤
     for k in need_params.split(','):
@@ -93,5 +98,5 @@ class MiningAPI(MethodView):
         elif name == 'battery-statistic':
             json = _get_battery_statistic_data(name.replace('-', '_'))
         else:
-            abort(404)
+            abort(NOT_FOUND)
         return json

@@ -2,10 +2,11 @@ from flask import request, abort, url_for
 from flask.views import MethodView
 from sqlalchemy.exc import IntegrityError
 
-from ubattery import checker
+from ubattery.checker import RE_SIX_CHARACTER_CHECKER
 from ubattery.extensions import mysql, cache
 from ubattery.models import User
-from .permission import permission_required, SUPER_USER
+from ubattery.permission import permission_required, SUPER_USER
+from ubattery.status_code import INTERNAL_SERVER_ERROR
 
 
 class UsersAPI(MethodView):
@@ -44,16 +45,16 @@ class UsersAPI(MethodView):
         data = request.get_json()
 
         user_name = data['userName']
-        if not checker.RE_SIX_CHARACTER_CHECKER.match(user_name):
-            abort(500)
+        if not RE_SIX_CHARACTER_CHECKER.match(user_name):
+            abort(INTERNAL_SERVER_ERROR)
 
         password = data['password']
-        if not checker.RE_SIX_CHARACTER_CHECKER.match(password):
-            abort(500)
+        if not RE_SIX_CHARACTER_CHECKER.match(password):
+            abort(INTERNAL_SERVER_ERROR)
 
         comment = data['comment']
         if len(comment) > 64:
-            abort(500)
+            abort(INTERNAL_SERVER_ERROR)
 
         user = User(name=user_name, comment=comment)
         user.set_password(password)
@@ -80,11 +81,11 @@ class UsersAPI(MethodView):
 
         comment = data['comment']
         if len(comment) > 64:
-            abort(500)
+            abort(INTERNAL_SERVER_ERROR)
 
         user_status = data['userStatus']
         if not isinstance(user_status, bool):  # 拿到的是 bool 类型
-            abort(500)
+            abort(INTERNAL_SERVER_ERROR)
         user_status = int(user_status)
 
         user = User.query.filter_by(name=user_name).first()

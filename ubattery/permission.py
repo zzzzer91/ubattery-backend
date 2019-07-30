@@ -1,14 +1,19 @@
-import functools
+"""用户权限验证。"""
+
+from functools import wraps
 from collections import namedtuple
 
 from flask import abort, session
 
-from ubattery.extensions import cache
-from ubattery.models import User
+from .status_code import UNAUTHORIZED, FORBIDDEN
+from .extensions import cache
+from .models import User
 
 UserSimpleInfo = namedtuple('UserSimpleInfo', 'name type')
 
+# 超级用户
 SUPER_USER = 1
+# 普通用户
 COMMON_USER = 0
 
 
@@ -44,14 +49,15 @@ def permission_required(permission=None):
     """
 
     def decorate(view):
-        @functools.wraps(view)
+        @wraps(view)
         def wrapper(*args, **kwargs):
             current_user = get_current_user()
             if current_user is None:
-                abort(403)
+                # 用户未登录
+                abort(UNAUTHORIZED)
             if permission is not None and current_user.type != permission:
                 # 不符合权限
-                abort(403)
+                abort(FORBIDDEN)
             return view(*args, **kwargs)
         return wrapper
     return decorate

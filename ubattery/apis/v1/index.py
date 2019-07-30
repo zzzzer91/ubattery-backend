@@ -1,7 +1,7 @@
 from flask.views import MethodView
 
 from ubattery.extensions import cache
-from .permission import permission_required
+from ubattery.permission import permission_required
 
 API_VERSION = 'v1'
 API_BASE_URL = f'/api/{API_VERSION}'
