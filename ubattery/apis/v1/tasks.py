@@ -5,9 +5,9 @@ from typing import Dict, List
 from flask import request, abort
 from flask.views import MethodView
 
-from ubattery.common import permission, mapping, checker
+from ubattery import mapping, checker
 from ubattery.extensions import celery, mongo, mysql, cache
-from ubattery.blueprints.auth import permission_required
+from .permission import permission_required, SUPER_USER
 
 
 def _compute_charging_process_data(rows: List) -> List[Dict]:
@@ -196,7 +196,7 @@ def get_task(task_id: str) -> List[Dict]:
 
 class TasksAPI(MethodView):
 
-    decorators = (permission_required(permission.SUPER_USER),)
+    decorators = [permission_required(SUPER_USER)]
 
     def get(self, task_id):
         """返回任务。"""

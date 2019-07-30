@@ -1,5 +1,6 @@
 from flask import Blueprint
 
+from .auth import login, logout
 from .index import IndexAPI, API_VERSION, API_BASE_URL
 from .mining import MiningAPI
 from .users import UsersAPI
@@ -7,6 +8,18 @@ from .tasks import TasksAPI
 
 api_v1_bp = Blueprint(f'api_{API_VERSION}', __name__, url_prefix=API_BASE_URL)
 
+
+api_v1_bp.add_url_rule(
+    '/login',
+    view_func=login,
+    methods=['GET', 'POST']
+)
+
+api_v1_bp.add_url_rule(
+    '/logout',
+    view_func=logout,
+    methods=['GET']
+)
 
 index_api = IndexAPI.as_view('index_api')
 api_v1_bp.add_url_rule(

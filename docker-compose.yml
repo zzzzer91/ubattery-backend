@@ -2,6 +2,15 @@ version: '3'
 
 services:
 
+  nginx:
+    image: nginx:mainline-alpine
+    ports:
+      - 127.0.0.1:3389:80
+    volumes:
+      - ${NGINX_CONF_FILE}:/etc/nginx/nginx.conf:ro
+      - ${NGINX_DIST_DIR}:/usr/share/nginx/dist
+      - ${NGINX_MEDIA_DIR}:/usr/share/nginx/media
+
   mysql:
     image: mysql:5.7.26  # 固定版本
     # restart: always  # 重启系统后重启容器

@@ -73,6 +73,11 @@ echo "${CONFIG_FILE} 生成完毕！"
 echo "# docker-compose.yml 中使用的环境变量" > ${ENV_FILE}
 echo "# 注意值两边的单双引号，会被当作值的一部分，这在 docker-compose 中会出现问题" >> ${ENV_FILE}
 #
+echo "# Nginx" >> ${ENV_FILE}
+echo "NGINX_CONF_FILE=${ABSOLUTE_CURRENT_PATH}/nginx.conf" >> ${ENV_FILE}
+echo "NGINX_DIST_DIR=${INSTANCE_DIR}/dist" >> ${ENV_FILE}
+echo "NGINX_MEDIA_DIR=${INSTANCE_DIR}/media" >> ${ENV_FILE}
+#
 echo "# MySQL" >> ${ENV_FILE}
 echo "MYSQL_ROOT_PASSWORD=${mysql_root_password}" >> ${ENV_FILE}
 echo "MYSQL_DATA_DIR=${DATABASE_DIR}/mysql" >> ${ENV_FILE}

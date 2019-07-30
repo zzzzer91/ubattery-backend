@@ -1,7 +1,7 @@
 from flask.views import MethodView
 
-from ubattery.blueprints.auth import permission_required
 from ubattery.extensions import cache
+from .permission import permission_required
 
 API_VERSION = 'v1'
 API_BASE_URL = f'/api/{API_VERSION}'
@@ -9,7 +9,7 @@ API_BASE_URL = f'/api/{API_VERSION}'
 
 class IndexAPI(MethodView):
 
-    decorators = (permission_required(),)
+    decorators = [permission_required()]
 
     @cache.cached()
     def get(self):

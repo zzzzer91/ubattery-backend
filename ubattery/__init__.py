@@ -1,39 +1,17 @@
-import os
-
 import click
-from flask import Flask, render_template
-
-from ubattery.json_encoder import MyJSONEncoder
-from ubattery.extensions import mysql, mongo, cache
-from ubattery.blueprints.index import index_bp
-from ubattery.blueprints.auth import auth_bp
-from ubattery.apis import api_v1_bp
+from flask import Flask
 
 
 def create_app(test_config=None):
     """`create_app()` 是一个应用工厂函数。"""
 
+    from .json_encoder import MyJSONEncoder
+
     # `__name__` 是当前 Python 模块的名称。
     # 应用需要知道在哪里设置路径， 使用 `__name__` 是一个方便的方法。
     # `instance_relative_config=True` 告诉应用配置文件是相对于 instance folder 的相对路径。
     # 实例文件夹在 app 包的外面，用于存放本地数据（例如配置密钥和数据库），不应当提交到版本控制系统。
-    app = Flask(
-        __name__,
-        instance_relative_config=True,
-        template_folder='./dist',
-        static_folder='./dist/assets'
-    )
-
-    # `os.makedirs()` 可以确保 `app.instance_path` 存在。
-    # Flask 不会自动创建实例文件夹
-    if not os.path.exists(app.instance_path):
-        os.mkdir(app.instance_path)
-
-    # 放置一些媒体文件，如图片，视频等
-    app.media_folder = os.path.join(app.instance_path, 'media')
-
-    # 放置用户上传头像的文件夹
-    app.avatar_folder = os.path.join(app.media_folder, 'avatars')
+    app = Flask(__name__, instance_relative_config=True)
 
     # 使用自己的 json 编码器，序列化 MySQL 某些不能直接 json 序列化的类型
     app.json_encoder = MyJSONEncoder
@@ -41,9 +19,7 @@ def create_app(test_config=None):
     load_config(app, test_config)
 
     register_extensions(app)
-    register_blueprints(app)
     register_apis(app)
-    register_errorhandlers(app)
     register_commands(app)
 
     return app
@@ -81,6 +57,8 @@ def load_config(app, test_config):
 def register_extensions(app):
     """注册拓展。"""
 
+    from .extensions import mysql, mongo, cache
+
     # flask-sqlalchemy
     mysql.init_app(app)
 
@@ -97,38 +75,18 @@ def register_extensions(app):
     cache.init_app(app)
 
 
-def register_blueprints(app):
-    """注册一些基本组件蓝图。"""
-
-    app.register_blueprint(index_bp)
-    app.register_blueprint(auth_bp)
-
-
 def register_apis(app):
     """注册 API 蓝图。"""
+
+    from .apis import api_v1_bp
 
     app.register_blueprint(api_v1_bp)
 
 
-def register_errorhandlers(app):
-    """注册错误处理。"""
-
-    # 注册 403 处理页面
-    # 缓存函数中的 key_prefix 参数，代表 key 名
-    @app.errorhandler(403)
-    @cache.cached(key_prefix='errorhandler_forbidden')
-    def forbidden(error):
-        return render_template('403.html'), 403
-
-    # 注册 404 处理页面
-    @app.errorhandler(404)
-    @cache.cached(key_prefix='errorhandler_page_not_found')
-    def page_not_found(error):
-        return render_template('404.html'), 404
-
-
 def register_commands(app):
     """注册一些有用的命令，通过 `flask <命令名>` 调用。"""
+
+    from .extensions import mysql, cache
 
     @app.cli.command('init-db')
     def init_db():

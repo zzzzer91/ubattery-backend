@@ -2,7 +2,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import func
 import sqlalchemy.dialects.mysql as mysql_type
 
-from ubattery.extensions import mysql
+from .extensions import mysql
 
 
 class User(mysql.Model):

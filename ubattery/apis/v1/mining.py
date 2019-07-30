@@ -1,9 +1,9 @@
 from flask import request, abort
 from flask.views import MethodView
 
-from ubattery.common import checker, mapping
+from ubattery import mapping, checker
 from ubattery.extensions import mysql, mongo
-from ubattery.blueprints.auth import permission_required
+from .permission import permission_required
 
 
 def _get_base_data():
@@ -80,7 +80,7 @@ def _get_battery_statistic_data(name):
 
 class MiningAPI(MethodView):
 
-    decorators = (permission_required(),)
+    decorators = [permission_required()]
 
     def get(self, name):
         json = None
