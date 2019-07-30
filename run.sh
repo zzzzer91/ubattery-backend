@@ -16,6 +16,6 @@ gunicorn wsgi:app -w 3 -b 172.18.0.1:5000 -k eventlet -D
 # 创建后台任务执行者
 # -A 指定 celery 实例位置
 # -D 后台运行 celery worker
-celery -A ubattery.extensions.celery worker --concurrency=2 -D
+celery -A celery_worker.celery worker --loglevel=INFO --concurrency=2 -D
 
 echo 'OK!'
