@@ -40,7 +40,7 @@ def _compute_charging_process_data(rows: List) -> List[Dict]:
         last_soc = row[-1]['battery_soc']
         first_id = row[0]['id']
         last_id = row[-1]['id']
-        d = {
+        data.append({
             'index': i,
             'max_vol': float(max_vol),
             'last_vol': float(last_vol),
@@ -49,8 +49,7 @@ def _compute_charging_process_data(rows: List) -> List[Dict]:
             'last_soc': float(last_soc),
             'first_id': first_id,
             'last_id': last_id,
-        }
-        data.append(d)
+        })
 
     return data
 
@@ -75,7 +74,7 @@ def _compute_battery_statistic_data(rows: List) -> List[Dict]:
     data = []
     for number, (max_t_count, min_t_count) in temp:
         data.append({
-            'number': number,
+            'number': f'{number}号',
             'max_t_count': max_t_count,
             'min_t_count': min_t_count
         })
