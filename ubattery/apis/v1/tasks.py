@@ -8,7 +8,7 @@ from flask.views import MethodView
 from ubattery.mapping import MYSQL_NAME_TO_TABLE
 from ubattery.checker import RE_DATETIME_CHECKER
 from ubattery.extensions import celery, mongo, mysql, cache
-from ubattery.permission import permission_required, SUPER_USER
+from ubattery.permission import permission_required
 from ubattery.status_code import INTERNAL_SERVER_ERROR
 
 
@@ -197,7 +197,7 @@ def get_task(task_id: str) -> List[Dict]:
 
 class TasksAPI(MethodView):
 
-    decorators = [permission_required(SUPER_USER)]
+    decorators = [permission_required()]
 
     def get(self, task_id):
         """返回任务。"""
