@@ -12,6 +12,7 @@ YUTONG_NAME_TO_FIELD = {
     '反向累计电量': 'r_t_p',
     '总里程': 'total_mileage',
     'SOC': 'battery_soc',
+    '状态号': 'byt_ma_sys_state',
     '单体最高温度': 's_b_max_t',
     '单体最低温度': 's_b_min_t',
     '单体最高电压': 's_b_max_v',
