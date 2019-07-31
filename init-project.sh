@@ -4,6 +4,7 @@ ABSOLUTE_CURRENT_PATH="$(cd "$(dirname $0)";pwd)"
 INSTANCE_DIR="${ABSOLUTE_CURRENT_PATH}/instance"
 DATABASE_DIR="${INSTANCE_DIR}/database"
 MEDIA_DIR="${INSTANCE_DIR}/media"
+DIST_DIR="${INSTANCE_DIR}/dist"
 CONFIG_FILE="${INSTANCE_DIR}/config.py"
 ENV_FILE="${ABSOLUTE_CURRENT_PATH}/.env"
 PYTHON_REQUIREMENTS_FILE="${ABSOLUTE_CURRENT_PATH}/requirements.txt"
@@ -35,6 +36,13 @@ else
     echo "${MEDIA_DIR} 已存在！"
 fi
 
+if [ ! -d "${DIST_DIR}" ]; then
+    mkdir "${DIST_DIR}"
+    echo "${DIST_DIR} 创建完毕！"
+else
+    echo "${DIST_DIR} 已存在！"
+fi
+
 mysql_root_password=''
 mysql_database=''
 mongo_root_password=''
@@ -52,6 +60,8 @@ echo "SECRET_KEY = $(python -c 'import os; print(os.urandom(16))')" >> ${CONFIG_
 #
 echo "# MySQL" >> ${CONFIG_FILE}
 echo "SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:${mysql_root_password}@localhost:3306/${mysql_database}'" >> ${CONFIG_FILE}
+echo "SQLALCHEMY_POOL_SIZE = 5" >> ${CONFIG_FILE}
+echo "SQLALCHEMY_TRACK_MODIFICATIONS = False" >> ${CONFIG_FILE}
 #
 echo "# MongoDB" >> ${CONFIG_FILE}
 echo "MONGO_URI = 'mongodb://root:${mongo_root_password}@localhost:27017'" >> ${CONFIG_FILE}
@@ -61,6 +71,7 @@ echo "# Redis" >> ${CONFIG_FILE}
 echo "REDIS_URL = 'redis://@localhost:6379/0'" >> ${CONFIG_FILE}
 #
 echo "# flask-caching" >> ${CONFIG_FILE}
+echo "CACHE_TYPE = 'redis'" >> ${CONFIG_FILE}
 echo "CACHE_REDIS_URL = REDIS_URL" >> ${CONFIG_FILE}
 #
 echo "# celery" >> ${CONFIG_FILE}
