@@ -10,75 +10,9 @@ from ubattery.checker import RE_DATETIME_CHECKER
 from ubattery.extensions import celery, mongo, mysql, cache
 from ubattery.permission import permission_required
 from ubattery.status_code import INTERNAL_SERVER_ERROR
-
-
-def _compute_charging_process_data(rows: List) -> List[Dict]:
-    """计算充电过程。"""
-
-    lst1 = []
-    i = -1
-    pre = -1
-    for row in rows:
-        row = dict(row)
-        if row['byt_ma_sys_state'] != pre:
-            pre = row['byt_ma_sys_state']
-            lst1.append([])
-            i += 1
-        lst1[i].append(row)
-
-    lst2 = []
-    for row in lst1:
-        if row[0]['byt_ma_sys_state'] == 6:
-            lst2.append(row)
-
-    data = []
-    for i, row in enumerate(lst2, 1):
-        max_vol = max(row, key=lambda x: x['bty_t_vol'])['bty_t_vol']
-        last_vol = row[-1]['bty_t_vol']
-        sub_vol = max_vol - last_vol
-        init_soc = row[0]['battery_soc']
-        last_soc = row[-1]['battery_soc']
-        first_id = row[0]['id']
-        last_id = row[-1]['id']
-        data.append({
-            'index': i,
-            'max_vol': float(max_vol),
-            'last_vol': float(last_vol),
-            'sub_vol': float(sub_vol),
-            'init_soc': float(init_soc),
-            'last_soc': float(last_soc),
-            'first_id': first_id,
-            'last_id': last_id,
-        })
-
-    return data
-
-
-def _compute_working_condition_data(rows: List) -> List[Dict]:
-    pass
-
-
-def _compute_battery_statistic_data(rows: List) -> List[Dict]:
-    """计算电池统计数据。"""
-
-    battery_statistic = {}
-    for row in rows:
-        key1 = row[0]
-        if key1 is not None:
-            battery_statistic.setdefault(key1, [0, 0])[0] += 1
-        key2 = row[1]
-        if key2 is not None:
-            battery_statistic.setdefault(key2, [0, 0])[1] += 1
-
-    temp = sorted(battery_statistic.items(), key=lambda x: x[0])
-    data = []
-    for number, (max_t_count, min_t_count) in temp:
-        data.append({
-            'number': f'{number}号',
-            'max_t_count': max_t_count,
-            'min_t_count': min_t_count
-        })
-    return data
+from .algorithm.battery_statistic import compute_battery_statistic_data
+from .algorithm.charging_process import compute_charging_process_data
+from .algorithm.working_condition import compute_working_condition_data
 
 
 # 如果你不能马上使用 Celery 实例，用 `shared_task` 代替 task，如 Django 中。
@@ -111,13 +45,13 @@ def compute_task(self,
 
     if task_name_chinese == '充电过程':
         need_params = 'bty_t_vol, bty_t_curr, battery_soc, id, byt_ma_sys_state'
-        compute_alg = _compute_charging_process_data
+        compute_alg = compute_charging_process_data
     elif task_name_chinese == '工况':
-        need_params = ''
-        compute_alg = _compute_working_condition_data
+        need_params = 'timestamp, bty_t_curr, met_spd'
+        compute_alg = compute_working_condition_data
     elif task_name_chinese == '电池统计':
         need_params = 'max_t_s_b_num, min_t_s_b_num'
-        compute_alg = _compute_battery_statistic_data
+        compute_alg = compute_battery_statistic_data
     else:
         return
 
@@ -160,6 +94,7 @@ def compute_task(self,
         return
 
     # 处理数据
+    rows = [dict(row) for row in rows]
     data = compute_alg(rows)
 
     used_time = round(time.perf_counter() - start, 2)
@@ -179,6 +114,7 @@ def get_task_list() -> List[Dict]:
 
     data = []
     for item in mongo.db['tasks'].find(projection={'data': False}):
+        # 修改传出的字段名
         item['taskId'] = item.pop('_id')
         data.append(item)
     data.reverse()
@@ -210,6 +146,7 @@ class TasksAPI(MethodView):
                 'data': data,
             }
 
+        # 获取指定任务
         data = get_task(task_id)
         if data is None:
             cache.delete_memoized(get_task, task_id)
