@@ -42,12 +42,12 @@ services:
   # 数据库管理工具
 
   adminer:  # MySQL 管理
-    image: adminer
+    image: adminer:latest
     ports:
       - 8080:8080
 
 #  mongo-express:  # Mongo 管理
-#    image: mongo-express
+#    image: mongo-express:latest
 #    ports:
 #      - 8081:8081
 #    environment:
