@@ -4,8 +4,9 @@ services:
 
   nginx:
     image: nginx:mainline-alpine
-    ports:
-      - 127.0.0.1:3389:80
+    network_mode: "host" # 因为用了 host 网络模式，所以容器中的端口会会直接映射到 localhost
+#    ports:
+#      - 127.0.0.1:3389:3389
     volumes:
       - ${NGINX_CONF_FILE}:/etc/nginx/nginx.conf:ro
       - ${NGINX_DIST_DIR}:/usr/share/nginx/dist
