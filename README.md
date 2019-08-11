@@ -8,12 +8,6 @@
 $ ./init-project.sh
 ```
 
-## 启动数据库（docker）
-
-```bash
-$ docker-compose up
-```
-
 ## 生成 MySQL 表（可选）
 
 ```bash
