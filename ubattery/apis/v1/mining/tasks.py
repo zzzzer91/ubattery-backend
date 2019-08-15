@@ -10,9 +10,9 @@ from ubattery.checker import RE_DATETIME_CHECKER
 from ubattery.extensions import celery, mongo, mysql, cache
 from ubattery.permission import permission_required
 from ubattery.status_code import INTERNAL_SERVER_ERROR
-from .algorithm.battery_statistic import compute_battery_statistic_data
-from .algorithm.charging_process import compute_charging_process_data
-from .algorithm.working_condition import compute_working_condition_data
+from .algorithm import compute_battery_statistic_data
+from .algorithm import compute_charging_process_data
+from .algorithm import compute_working_condition_data
 
 
 # 如果你不能马上使用 Celery 实例，用 `shared_task` 代替 task，如 Django 中。
@@ -131,7 +131,7 @@ def get_task(task_id: str) -> List[Dict]:
     )['data']
 
 
-class TasksAPI(MethodView):
+class MiningTasksAPI(MethodView):
 
     decorators = [permission_required()]
 

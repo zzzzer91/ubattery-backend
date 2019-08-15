@@ -17,7 +17,7 @@ def create_app(test_config=None):
     load_config(app, test_config)
 
     register_extensions(app)
-    register_apis(app)
+    register_blueprints(app)
     register_commands(app)
 
     return app
@@ -67,11 +67,13 @@ def register_extensions(app):
     cache.init_app(app)
 
 
-def register_apis(app):
-    """注册 API 蓝图。"""
+def register_blueprints(app):
+    """注册蓝图。"""
 
+    from .auth import auth_bp
     from .apis import api_v1_bp
 
+    app.register_blueprint(auth_bp)
     app.register_blueprint(api_v1_bp)
 
 

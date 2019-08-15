@@ -82,7 +82,7 @@ def _get_battery_statistic_data(name):
     }
 
 
-class MiningAPI(MethodView):
+class BasicDataAPI(MethodView):
 
     decorators = [permission_required()]
 

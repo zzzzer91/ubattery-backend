@@ -1,12 +1,15 @@
 from datetime import datetime
 
-from flask import session, request
+from flask import session, request, Blueprint
 
 from ubattery.extensions import mysql
 from ubattery.models import User
 from ubattery.permission import permission_required
 
+auth_bp = Blueprint(f'auth', __name__)
 
+
+@auth_bp.route('/login', methods=('GET', 'POST'))
 def login():
     """登录验证"""
 
@@ -82,6 +85,7 @@ def login():
     }
 
 
+@auth_bp.route('/logout')
 @permission_required()
 def logout():
     """注销的时候把用户 id 从 session 中移除。"""
