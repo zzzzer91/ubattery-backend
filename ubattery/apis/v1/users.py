@@ -67,6 +67,7 @@ class UsersAPI(MethodView):
                 'data': '用户已存在！'
             }
 
+        # 删除用户列表缓存
         cache.delete(f'view/{url_for(".users_api")}')
 
         return {
