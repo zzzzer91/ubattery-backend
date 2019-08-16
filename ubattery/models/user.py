@@ -23,7 +23,7 @@ class User(mysql.Model):
     # `default` 参数是在 python 中对数据填充默认值，不体现在表中
     # `server_default` 会体现在表中，必须是字符串类型，或某些函数类型
     type = mysql.Column(
-        mysql_type.TINYINT(unsigned=True), nullable=False, server_default='0',
+        mysql_type.TINYINT, nullable=False, server_default='0',
         comment='用户类型，1超级用户，0普通用户'
     )
 
@@ -43,12 +43,12 @@ class User(mysql.Model):
     )
 
     login_count = mysql.Column(
-        mysql_type.INTEGER(unsigned=True), nullable=False, server_default='0',
+        mysql_type.INTEGER, nullable=False, server_default='0',
         comment='登录次数'
     )
 
     status = mysql.Column(
-        mysql_type.TINYINT(unsigned=True), nullable=False, server_default='1',
+        mysql_type.TINYINT, nullable=False, server_default='1',
         comment='是否允许登录，1 允许，0 禁止'
     )
 
