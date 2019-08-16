@@ -3,7 +3,7 @@ def create_app(test_config=None):
     """`create_app()` 是一个应用工厂函数。"""
 
     from flask import Flask
-    from .json_encoder import MyJSONEncoder
+    from .encoder import MyJSONEncoder
 
     # `__name__` 是当前 Python 模块的名称。
     # 应用需要知道在哪里设置路径， 使用 `__name__` 是一个方便的方法。
