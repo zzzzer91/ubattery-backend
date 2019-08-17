@@ -23,4 +23,4 @@ class IndexAPI(MethodView):
                 'data': 'Dict'
             }
         }
-        return json_response.build(data=data)
+        return json_response.build(json_response.SUCCESS, data=data)

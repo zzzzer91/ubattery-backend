@@ -52,9 +52,9 @@ def _get_base_data():
     data = [tuple(row) for row in rows]
 
     if len(data) == 0:
-        return json_response.build(code=json_response.ERROR, msg='未查询到相关数据！')
+        return json_response.build(json_response.ERROR, msg='未查询到相关数据！')
 
-    return json_response.build(data=data)
+    return json_response.build(json_response.SUCCESS, msg='查询成功！', data=data)
 
 
 def _get_battery_statistic_data(name):
@@ -66,9 +66,9 @@ def _get_battery_statistic_data(name):
     )['data']
 
     if len(data) == 0:
-        return json_response.build(code=json_response.ERROR, msg='未查询到相关数据！')
+        return json_response.build(json_response.ERROR, msg='未查询到相关数据！')
 
-    return json_response.build(data=data)
+    return json_response.build(json_response.SUCCESS, msg='查询成功！', data=data)
 
 
 class BasicDataAPI(MethodView):

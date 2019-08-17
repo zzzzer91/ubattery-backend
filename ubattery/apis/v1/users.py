@@ -35,7 +35,7 @@ class UsersAPI(MethodView):
                 'createTime': user.create_time
             })
 
-        return json_response.build(data=data)
+        return json_response.build(json_response.SUCCESS, data=data)
 
     def post(self):
         """添加新用户"""
@@ -60,12 +60,12 @@ class UsersAPI(MethodView):
         try:
             mysql.session.commit()
         except IntegrityError:
-            return json_response.build(code=json_response.ERROR, msg='用户已存在！')
+            return json_response.build(json_response.ERROR, msg='用户已存在！')
 
         # 删除用户列表缓存
         cache.delete(f'view/{url_for(".users_api")}')
 
-        return json_response.build()
+        return json_response.build(json_response.SUCCESS, msg=f'创建用户 {user_name} 成功！')
 
     def put(self, user_name):
         """设置用户资料"""
@@ -88,4 +88,4 @@ class UsersAPI(MethodView):
 
         cache.delete(f'view/{url_for(".users_api")}')
 
-        return json_response.build()
+        return json_response.build(json_response.SUCCESS, msg=f'修改用户 {user_name} 成功！')

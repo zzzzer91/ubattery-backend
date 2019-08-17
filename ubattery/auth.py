@@ -18,7 +18,7 @@ def login():
         user_id = session.get('user_id')
 
         if user_id is None:
-            return json_response.build(code=json_response.ERROR)
+            return json_response.build(json_response.ERROR)
 
         user: User = User.query.get(user_id)
 
@@ -29,7 +29,7 @@ def login():
             msg = '该用户已被禁止登录！'
 
         if msg:
-            return json_response.build(code=json_response.ERROR, msg=msg)
+            return json_response.build(json_response.ERROR, msg=msg)
 
     else:
         data = request.get_json()
@@ -48,7 +48,7 @@ def login():
             msg = '该用户已被禁止登录！'
 
         if msg:
-            return json_response.build(code=json_response.ERROR, msg=msg)
+            return json_response.build(json_response.ERROR, msg=msg)
 
         # 更新登录时间
         user.last_login_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -72,7 +72,7 @@ def login():
         'lastLoginTime': user.last_login_time,
         'loginCount': user.login_count
     }
-    return json_response.build(data=data)
+    return json_response.build(json_response.SUCCESS, data=data)
 
 
 @auth_bp.route('/logout', methods=('POST',))
@@ -82,4 +82,4 @@ def logout():
 
     session.clear()
 
-    return json_response.build()
+    return json_response.build(json_response.SUCCESS)

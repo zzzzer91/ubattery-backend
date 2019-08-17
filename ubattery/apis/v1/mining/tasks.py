@@ -142,15 +142,15 @@ class MiningTasksAPI(MethodView):
         # 获取所有任务
         if task_id is None:
             data = get_task_list()
-            return json_response.build(data=data)
+            return json_response.build(json_response.SUCCESS, data=data)
 
         # 获取指定任务
         data = get_task(task_id)
         if data is None:
             cache.delete_memoized(get_task, task_id)
-            return json_response.build(code=json_response.ERROR, msg='无可绘制数据！')
+            return json_response.build(json_response.ERROR, msg='无可绘制数据！')
 
-        return json_response.build(data=data)
+        return json_response.build(json_response.SUCCESS, data=data)
 
     def post(self, task_name):
         """创建任务。"""
@@ -184,7 +184,7 @@ class MiningTasksAPI(MethodView):
         elif task_name == 'battery-statistic':
             task_name_chinese = '电池统计'
         else:
-            return json_response.build(code=json_response.ERROR)
+            return json_response.build(json_response.ERROR)
 
         # 交给 celery 计算
         # 返回一个 task，可以拿到任务 Id 等属性
@@ -202,7 +202,7 @@ class MiningTasksAPI(MethodView):
             'taskStatus': '执行中',
             'comment': None,
         }
-        return json_response.build(data=data)
+        return json_response.build(json_response.SUCCESS, msg='创建成功！', data=data)
 
     def delete(self, task_id):
         # 取消一个任务，
@@ -211,4 +211,4 @@ class MiningTasksAPI(MethodView):
         compute_task.AsyncResult(task_id).revoke(terminate=True)
 
         mongo.db['mining_tasks'].delete_one({'_id': task_id})
-        return json_response.build()
+        return json_response.build(json_response.SUCCESS, msg='删除成功！')
