@@ -2,9 +2,10 @@ from datetime import datetime
 
 from flask import session, request, Blueprint
 
-from ubattery.extensions import mysql
-from ubattery.models import User
-from ubattery.permission import permission_required
+from .extensions import mysql
+from .models import User
+from .permission import permission_required
+from .json_response import build_json_response, ERROR
 
 auth_bp = Blueprint(f'auth', __name__)
 
@@ -17,24 +18,18 @@ def login():
         user_id = session.get('user_id')
 
         if user_id is None:
-            return {
-                'status': False,
-                'data': None
-            }
+            return build_json_response(code=ERROR)
 
         user: User = User.query.get(user_id)
 
-        error = None
+        msg = None
         if user is None:
-            error = 'cookie 获取失败！'
+            msg = 'cookie 获取失败！'
         elif user.status == 0:
-            error = '该用户已被禁止登录！'
+            msg = '该用户已被禁止登录！'
 
-        if error:
-            return {
-                'status': False,
-                'data': error
-            }
+        if msg:
+            return build_json_response(code=ERROR, msg=msg)
 
     else:
         data = request.get_json()
@@ -42,21 +37,18 @@ def login():
 
         user: User = User.query.filter_by(name=user_name).first()
 
-        error = None
+        msg = None
         if user is None:
-            error = '帐号或密码错误！'
+            msg = '帐号或密码错误！'
         # check_password_hash() 以相同的方式哈希提交的密码并安全的比较哈希值。
         # 如果匹配成功，那么密码就是正确的。
         elif not user.validate_password(data['password']):
-            error = '帐号或密码错误！'
+            msg = '帐号或密码错误！'
         elif user.status == 0:
-            error = '该用户已被禁止登录！'
+            msg = '该用户已被禁止登录！'
 
-        if error:
-            return {
-                'status': False,
-                'data': error
-            }
+        if msg:
+            return build_json_response(code=ERROR, msg=msg)
 
         # 更新登录时间
         user.last_login_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -73,26 +65,21 @@ def login():
     # 请每个请求的开头，如果用户已登录，那么其用户信息应当被载入，以使其可用于其他视图。
     session['user_id'] = user.id
 
-    return {
-        'status': True,
-        'data': {
-            'userName': user.name,
-            'userType': user.type,
-            'avatarName': user.avatar_name,
-            'lastLoginTime': user.last_login_time,
-            'loginCount': user.login_count
-        }
+    data = {
+        'userName': user.name,
+        'userType': user.type,
+        'avatarName': user.avatar_name,
+        'lastLoginTime': user.last_login_time,
+        'loginCount': user.login_count
     }
+    return build_json_response(data=data)
 
 
-@auth_bp.route('/logout')
+@auth_bp.route('/logout', methods=('POST',))
 @permission_required()
 def logout():
     """注销的时候把用户 id 从 session 中移除。"""
 
     session.clear()
 
-    return {
-        'status': True,
-        'data': None
-    }
+    return build_json_response()
