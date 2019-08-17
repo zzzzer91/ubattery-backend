@@ -5,6 +5,7 @@ from typing import Dict, List
 from flask import request, abort
 from flask.views import MethodView
 
+from ubattery import json_response
 from ubattery.models import MYSQL_NAME_TO_TABLE
 from ubattery.checker import RE_DATETIME_CHECKER
 from ubattery.extensions import celery, mongo, mysql, cache
@@ -141,24 +142,15 @@ class MiningTasksAPI(MethodView):
         # 获取所有任务
         if task_id is None:
             data = get_task_list()
-            return {
-                'status': True,
-                'data': data,
-            }
+            return json_response.build(data=data)
 
         # 获取指定任务
         data = get_task(task_id)
         if data is None:
             cache.delete_memoized(get_task, task_id)
-            return {
-                'status': False,
-                'data': '无可绘制数据！',
-            }
+            return json_response.build(code=json_response.ERROR, msg='无可绘制数据！')
 
-        return {
-            'status': True,
-            'data': data,
-        }
+        return json_response.build(data=data)
 
     def post(self, task_name):
         """创建任务。"""
@@ -192,10 +184,7 @@ class MiningTasksAPI(MethodView):
         elif task_name == 'battery-statistic':
             task_name_chinese = '电池统计'
         else:
-            return {
-                'status': False,
-                'data': None,
-            }
+            return json_response.build(code=json_response.ERROR)
 
         # 交给 celery 计算
         # 返回一个 task，可以拿到任务 Id 等属性
@@ -204,18 +193,16 @@ class MiningTasksAPI(MethodView):
             table_name, start_date, end_date,
         )
 
-        return {
-            'status': True,
-            'data': {
-                'taskName': task_name_chinese,
-                'dataComeFrom': data_come_from,
-                'requestParams': request_params,
-                'taskId': task.id,
-                'createTime': create_time,
-                'taskStatus': '执行中',
-                'comment': None,
-            },
+        data = {
+            'taskName': task_name_chinese,
+            'dataComeFrom': data_come_from,
+            'requestParams': request_params,
+            'taskId': task.id,
+            'createTime': create_time,
+            'taskStatus': '执行中',
+            'comment': None,
         }
+        return json_response.build(data=data)
 
     def delete(self, task_id):
         # 取消一个任务，
@@ -224,7 +211,4 @@ class MiningTasksAPI(MethodView):
         compute_task.AsyncResult(task_id).revoke(terminate=True)
 
         mongo.db['mining_tasks'].delete_one({'_id': task_id})
-        return {
-            'status': False,
-            'data': None,
-        }
+        return json_response.build()

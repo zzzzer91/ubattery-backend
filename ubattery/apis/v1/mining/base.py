@@ -1,6 +1,7 @@
 from flask import request, abort
 from flask.views import MethodView
 
+from ubattery import json_response
 from ubattery.models import MYSQL_NAME_TO_TABLE
 from ubattery.checker import RE_DATETIME_CHECKER
 from ubattery.extensions import mysql, mongo
@@ -51,15 +52,9 @@ def _get_base_data():
     data = [tuple(row) for row in rows]
 
     if len(data) == 0:
-        return {
-            'status': False,
-            'data': '未查询到相关数据！'
-        }
+        return json_response.build(code=json_response.ERROR, msg='未查询到相关数据！')
 
-    return {
-        'status': True,
-        'data': data
-    }
+    return json_response.build(data=data)
 
 
 def _get_battery_statistic_data(name):
@@ -71,15 +66,9 @@ def _get_battery_statistic_data(name):
     )['data']
 
     if len(data) == 0:
-        return {
-            'status': False,
-            'data': '未查询到相关数据！'
-        }
+        return json_response.build(code=json_response.ERROR, msg='未查询到相关数据！')
 
-    return {
-        'status': True,
-        'data': data
-    }
+    return json_response.build(data=data)
 
 
 class BasicDataAPI(MethodView):
