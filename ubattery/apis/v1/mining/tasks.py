@@ -11,9 +11,9 @@ from ubattery.checker import RE_DATETIME_CHECKER
 from ubattery.extensions import celery, mongo, mysql, cache
 from ubattery.permission import permission_required
 from ubattery.status_code import INTERNAL_SERVER_ERROR
-from .algorithm import compute_battery_statistic_data
-from .algorithm import compute_charging_process_data
-from .algorithm import compute_working_condition_data
+from .algorithm import compute_battery_statistic
+from .algorithm import compute_charging_process
+from .algorithm import compute_working_condition
 
 
 # 如果你不能马上使用 Celery 实例，用 `shared_task` 代替 task，如 Django 中。
@@ -46,13 +46,13 @@ def compute_task(self,
 
     if task_name == '充电过程':
         need_params = 'bty_t_vol, bty_t_curr, battery_soc, id, byt_ma_sys_state'
-        compute_alg = compute_charging_process_data
+        compute_alg = compute_charging_process
     elif task_name == '工况':
         need_params = 'timestamp, bty_t_curr, met_spd'
-        compute_alg = compute_working_condition_data
+        compute_alg = compute_working_condition
     elif task_name == '电池统计':
         need_params = 'max_t_s_b_num, min_t_s_b_num'
-        compute_alg = compute_battery_statistic_data
+        compute_alg = compute_battery_statistic
     else:
         return
 

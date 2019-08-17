@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 
-def compute_battery_statistic_data(rows: List[Dict]) -> List[Dict]:
+def compute_battery_statistic(rows: List[Dict]) -> List[Dict]:
     """计算电池统计数据。"""
 
     battery_statistic = {}

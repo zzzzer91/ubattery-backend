@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 
-def compute_charging_process_data(rows: List[Dict]) -> List[Dict]:
+def compute_charging_process(rows: List[Dict]) -> List[Dict]:
     """计算充电过程。"""
 
     lst1 = []
