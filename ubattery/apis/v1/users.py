@@ -7,6 +7,7 @@ from ubattery.extensions import mysql, cache
 from ubattery.models import User
 from ubattery.permission import permission_required, SUPER_USER
 from ubattery.status_code import INTERNAL_SERVER_ERROR
+from ubattery import json_response
 
 
 class UsersAPI(MethodView):
@@ -34,10 +35,7 @@ class UsersAPI(MethodView):
                 'createTime': user.create_time
             })
 
-        return {
-            'status': True,
-            'data': data
-        }
+        return json_response.build(data=data)
 
     def post(self):
         """添加新用户"""
@@ -62,18 +60,12 @@ class UsersAPI(MethodView):
         try:
             mysql.session.commit()
         except IntegrityError:
-            return {
-                'status': False,
-                'data': '用户已存在！'
-            }
+            return json_response.build(code=json_response.ERROR, msg='用户已存在！')
 
         # 删除用户列表缓存
         cache.delete(f'view/{url_for(".users_api")}')
 
-        return {
-            'status': True,
-            'data': None
-        }
+        return json_response.build()
 
     def put(self, user_name):
         """设置用户资料"""
@@ -96,7 +88,4 @@ class UsersAPI(MethodView):
 
         cache.delete(f'view/{url_for(".users_api")}')
 
-        return {
-            'status': True,
-            'data': None
-        }
+        return json_response.build()

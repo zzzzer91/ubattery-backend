@@ -5,7 +5,7 @@ from flask import session, request, Blueprint
 from .extensions import mysql
 from .models import User
 from .permission import permission_required
-from .json_response import build_json_response, ERROR
+from . import json_response
 
 auth_bp = Blueprint(f'auth', __name__)
 
@@ -18,7 +18,7 @@ def login():
         user_id = session.get('user_id')
 
         if user_id is None:
-            return build_json_response(code=ERROR)
+            return json_response.build(code=json_response.ERROR)
 
         user: User = User.query.get(user_id)
 
@@ -29,7 +29,7 @@ def login():
             msg = '该用户已被禁止登录！'
 
         if msg:
-            return build_json_response(code=ERROR, msg=msg)
+            return json_response.build(code=json_response.ERROR, msg=msg)
 
     else:
         data = request.get_json()
@@ -48,7 +48,7 @@ def login():
             msg = '该用户已被禁止登录！'
 
         if msg:
-            return build_json_response(code=ERROR, msg=msg)
+            return json_response.build(code=json_response.ERROR, msg=msg)
 
         # 更新登录时间
         user.last_login_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -72,7 +72,7 @@ def login():
         'lastLoginTime': user.last_login_time,
         'loginCount': user.login_count
     }
-    return build_json_response(data=data)
+    return json_response.build(data=data)
 
 
 @auth_bp.route('/logout', methods=('POST',))
@@ -82,4 +82,4 @@ def logout():
 
     session.clear()
 
-    return build_json_response()
+    return json_response.build()

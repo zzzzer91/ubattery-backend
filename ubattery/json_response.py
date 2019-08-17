@@ -1,10 +1,10 @@
-from typing import Dict
+from typing import Dict, Any
 
 SUCCESS = 20000
 ERROR = 40000
 
 
-def build_json_response(*, code: int = SUCCESS, msg: str = "", data: Dict = None) -> Dict:
+def build(*, code: int = SUCCESS, msg: str = "", data: Any = None) -> Dict:
     return {
         'code': code,
         'msg': msg,
