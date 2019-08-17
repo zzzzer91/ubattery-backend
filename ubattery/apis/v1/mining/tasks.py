@@ -5,7 +5,7 @@ from typing import Dict, List
 from flask import request, abort
 from flask.views import MethodView
 
-from ubattery.mapping import MYSQL_NAME_TO_TABLE
+from ubattery.models import MYSQL_NAME_TO_TABLE
 from ubattery.checker import RE_DATETIME_CHECKER
 from ubattery.extensions import celery, mongo, mysql, cache
 from ubattery.permission import permission_required
@@ -57,7 +57,7 @@ def compute_task(self,
 
     start = time.perf_counter()
 
-    mongo.db['tasks'].insert_one({
+    mongo.db['mining_tasks'].insert_one({
         '_id': task_id,
         'taskName': task_name,
         'dataComeFrom': data_come_from,
@@ -84,7 +84,7 @@ def compute_task(self,
         )
 
     if rows.rowcount == 0:
-        mongo.db['tasks'].update_one(
+        mongo.db['mining_tasks'].update_one(
             {'_id': task_id},
             {'$set': {
                 'taskStatus': '失败',
@@ -99,7 +99,7 @@ def compute_task(self,
 
     used_time = round(time.perf_counter() - start, 2)
 
-    mongo.db['tasks'].update_one(
+    mongo.db['mining_tasks'].update_one(
         {'_id': task_id},
         {'$set': {
             'taskStatus': '完成',
@@ -113,7 +113,7 @@ def get_task_list() -> List[Dict]:
     """这个函数不太好用缓存，因为会频繁创建任务。"""
 
     data = []
-    for item in mongo.db['tasks'].find(projection={'data': False}):
+    for item in mongo.db['mining_tasks'].find(projection={'data': False}):
         # 修改传出的字段名
         item['taskId'] = item.pop('_id')
         data.append(item)
@@ -125,7 +125,7 @@ def get_task_list() -> List[Dict]:
 def get_task(task_id: str) -> List[Dict]:
     """获取单个任务数据"""
 
-    return mongo.db['tasks'].find_one(
+    return mongo.db['mining_tasks'].find_one(
         {'_id': task_id},
         projection={'_id': False, 'data': True}
     )['data']
@@ -223,7 +223,7 @@ class MiningTasksAPI(MethodView):
         # 如果该任务不存在，也不会报错
         compute_task.AsyncResult(task_id).revoke(terminate=True)
 
-        mongo.db['tasks'].delete_one({'_id': task_id})
+        mongo.db['mining_tasks'].delete_one({'_id': task_id})
         return {
             'status': False,
             'data': None,

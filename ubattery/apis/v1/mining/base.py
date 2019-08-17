@@ -1,7 +1,7 @@
 from flask import request, abort
 from flask.views import MethodView
 
-from ubattery.mapping import MYSQL_NAME_TO_TABLE
+from ubattery.models import MYSQL_NAME_TO_TABLE
 from ubattery.checker import RE_DATETIME_CHECKER
 from ubattery.extensions import mysql, mongo
 from ubattery.permission import permission_required
