@@ -22,7 +22,7 @@ class UsersAPI(MethodView):
         但也有解决办法，就是在添加或修改用户后，删除本块缓存。
         """
 
-        users = User.query.filter(User.type != 1).all()
+        users = User.query.filter(User.type != SUPER_USER).all()
 
         data = []
         for user in users:

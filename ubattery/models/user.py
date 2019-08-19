@@ -28,7 +28,7 @@ class User(mysql.Model):
     )
 
     avatar_name = mysql.Column(
-        mysql_type.VARCHAR(256), nullable=False, server_default='null.jpg',
+        mysql_type.VARCHAR(256), nullable=False,
         comment='头像图片名'
     )
 

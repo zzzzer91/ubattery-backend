@@ -12,7 +12,7 @@ from .models import User
 UserSimpleInfo = namedtuple('UserSimpleInfo', 'name type')
 
 # 超级用户
-SUPER_USER = 1
+SUPER_USER = 64
 # 普通用户
 COMMON_USER = 0
 
@@ -55,7 +55,7 @@ def permission_required(permission=None):
             if current_user is None:
                 # 用户未登录
                 abort(UNAUTHORIZED)
-            if permission is not None and current_user.type != permission:
+            if permission is not None and current_user.type < permission:
                 # 不符合权限
                 abort(FORBIDDEN)
             return view(*args, **kwargs)
