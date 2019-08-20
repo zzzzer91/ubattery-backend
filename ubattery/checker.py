@@ -3,7 +3,7 @@
 import re
 
 # 过滤不合法用户名和密码
-RE_SIX_CHARACTER_CHECKER = re.compile(r'^[0-9a-zA-Z]{6,14}$')
+RE_SIX_CHARACTER_CHECKER = re.compile(r'^[0-9a-zA-Z]{5,14}$')
 
 # 过滤不合法日期，只能 2000-2099 年
 # 润年，2 月 没检查

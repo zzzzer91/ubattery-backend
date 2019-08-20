@@ -1,10 +1,12 @@
 from datetime import datetime
 
-from flask import session, request, Blueprint
+from flask import session, request, Blueprint, abort
 
 from .extensions import mysql
 from .models import User
 from .permission import permission_required
+from .checker import RE_SIX_CHARACTER_CHECKER
+from .status_code import INTERNAL_SERVER_ERROR
 from . import json_response
 
 auth_bp = Blueprint(f'auth', __name__)
@@ -34,6 +36,11 @@ def login():
     else:
         data = request.get_json()
         user_name = data['userName']
+        if not RE_SIX_CHARACTER_CHECKER.match(user_name):
+            abort(INTERNAL_SERVER_ERROR)
+        password = data['password']
+        if not RE_SIX_CHARACTER_CHECKER.match(password):
+            abort(INTERNAL_SERVER_ERROR)
 
         user: User = User.query.filter_by(name=user_name).first()
 
@@ -42,7 +49,7 @@ def login():
             msg = '帐号或密码错误！'
         # check_password_hash() 以相同的方式哈希提交的密码并安全的比较哈希值。
         # 如果匹配成功，那么密码就是正确的。
-        elif not user.validate_password(data['password']):
+        elif not user.validate_password(password):
             msg = '帐号或密码错误！'
         elif user.status == 0:
             msg = '该用户已被禁止登录！'
