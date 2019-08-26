@@ -18,7 +18,7 @@ def _get_base_data():
     arg = args.get('dataComeFrom')
     if arg not in MYSQL_NAME_TO_TABLE:
         abort(INTERNAL_SERVER_ERROR)
-    data_come_from, name_to_field = MYSQL_NAME_TO_TABLE[arg]
+    data_come_from, field_to_name = MYSQL_NAME_TO_TABLE[arg]
 
     start_date = args.get('startDate')
     if start_date is None or not RE_DATETIME_CHECKER.match(start_date):
@@ -33,23 +33,23 @@ def _get_base_data():
     need_params = args.get('needParams', '').strip()
     if need_params == '':
         abort(INTERNAL_SERVER_ERROR)
-    col_names = []
-    # 把字段名转换成实际名，同时也是进行 sql 过滤
-    for k in need_params.split(','):
-        col_names.append(name_to_field[k])  # 会过滤不合法参数名
-    col_names = ', '.join(col_names)
+    col_names = need_params.split(',')
+    # 参数名过滤
+    for k in col_names:
+        if k not in field_to_name:  # 过滤不合法参数名
+            abort(INTERNAL_SERVER_ERROR)
 
     rows = mysql.session.execute(
         'SELECT '
         'timestamp,'
-        f'{col_names} '
+        f'{",".join(col_names)} '
         f'FROM {data_come_from} '
         'WHERE timestamp >= :start_date '
         'ORDER BY timestamp '
         'LIMIT :data_limit',
         {'start_date': start_date, 'data_limit': data_limit}
     )
-    data = [tuple(row) for row in rows]
+    data = [dict(row) for row in rows]
 
     if len(data) == 0:
         return json_response.build(json_response.ERROR, msg='未查询到相关数据！')
