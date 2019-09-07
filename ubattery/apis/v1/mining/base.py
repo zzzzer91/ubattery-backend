@@ -75,16 +75,5 @@ class BasicDataAPI(MethodView):
 
     decorators = [permission_required()]
 
-    def get(self, name):
-        json = None
-        if name == 'base':
-            json = _get_base_data()
-        elif name == 'charging-process':
-            json = _get_battery_statistic_data(name.replace('-', '_'))
-        elif name == 'working-condition':
-            json = _get_battery_statistic_data(name.replace('-', '_'))
-        elif name == 'battery-statistic':
-            json = _get_battery_statistic_data(name.replace('-', '_'))
-        else:
-            abort(NOT_FOUND)
-        return json
+    def get(self):
+        return _get_base_data()

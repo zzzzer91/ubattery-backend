@@ -15,25 +15,25 @@ api_v1_bp.add_url_rule(
 
 basic_data_api = BasicDataAPI.as_view('basic_data_api')
 api_v1_bp.add_url_rule(
-    '/mining/<string:name>',
+    '/mining/base',
     view_func=basic_data_api,
     methods=['GET']
 )
 
 mining_tasks_api = MiningTasksAPI.as_view('mining_tasks_api')
 api_v1_bp.add_url_rule(
-    '/tasks',
+    '/mining/tasks',
     defaults={'task_id': None},
     view_func=mining_tasks_api,
     methods=['GET']
 )
 api_v1_bp.add_url_rule(
-    '/tasks/<string:task_id>',
+    '/mining/tasks/<string:task_id>',
     view_func=mining_tasks_api,
     methods=['GET', 'DELETE']
 )
 api_v1_bp.add_url_rule(
-    '/tasks/<string:task_name>',
+    '/mining/tasks/<string:task_name>',
     view_func=mining_tasks_api,
     methods=['POST']
 )
