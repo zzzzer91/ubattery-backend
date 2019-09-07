@@ -31,7 +31,7 @@ class UsersAPI(MethodView):
                 'lastLoginTime': user.last_login_time,
                 'comment': user.comment,
                 'loginCount': user.login_count,
-                'userStatus': True if user.status == 1 else False,
+                'userStatus': user.status,
                 'createTime': user.create_time
             })
 
@@ -77,9 +77,10 @@ class UsersAPI(MethodView):
             abort(INTERNAL_SERVER_ERROR)
 
         user_status = data['userStatus']
-        if not isinstance(user_status, bool):  # 拿到的是 bool 类型
+        if not isinstance(user_status, int):  # 拿到的是 int 类型
             abort(INTERNAL_SERVER_ERROR)
-        user_status = int(user_status)
+        if user_status != 0 or user_status != 1:
+            abort(INTERNAL_SERVER_ERROR)
 
         user = User.query.filter_by(name=user_name).first()
         user.comment = comment
