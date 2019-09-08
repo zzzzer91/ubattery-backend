@@ -28,7 +28,7 @@ def compute_task(self,
                  table_name: str,
                  start_date: str,
                  end_date: str) -> None:
-    """根据 task_name_chinese，选择任务交给 celery 执行。
+    """根据 task_name，选择任务交给 celery 执行。
 
     :param self: Celery 装饰器中添加 `bind=True` 参数。告诉 Celery 发送一个 self 参数到该函数，
                  可以获取一些任务信息，或更新用 `self.update_stat()` 任务状态。
@@ -65,7 +65,7 @@ def compute_task(self,
         'requestParams': request_params,
         'createTime': create_time,
         'taskStatus': '执行中',
-        'comment': None,
+        'comment': "",
         'data': None
     })
 
@@ -152,7 +152,7 @@ class MiningTasksAPI(MethodView):
 
         return json_response.build(json_response.SUCCESS, data=data)
 
-    def post(self, task_name):
+    def post(self):
         """创建任务。"""
 
         jd = request.get_json()
@@ -163,7 +163,6 @@ class MiningTasksAPI(MethodView):
         all_data = jd.get('allData')
         start_date = None
         end_date = None
-
         if all_data is None:
             start_date = jd.get('startDate')
             if start_date is None or not RE_DATETIME_CHECKER.match(start_date):
@@ -177,30 +176,25 @@ class MiningTasksAPI(MethodView):
 
         create_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        if task_name == 'charging-process':
-            task_name_chinese = '充电过程'
-        # elif task_name == 'working-condition':
-        #     task_name = '工况'
-        elif task_name == 'battery-statistic':
-            task_name_chinese = '电池统计'
-        else:
+        task_name = jd.get('taskName')
+        if task_name not in ('充电过程', '工况', '电池统计'):
             return json_response.build(json_response.ERROR)
 
         # 交给 celery 计算
         # 返回一个 task，可以拿到任务 Id 等属性
         task = compute_task.delay(
-            task_name_chinese, data_come_from, request_params, create_time,
+            task_name, data_come_from, request_params, create_time,
             table_name, start_date, end_date,
         )
 
         data = {
-            'taskName': task_name_chinese,
+            'taskName': task_name,
             'dataComeFrom': data_come_from,
             'requestParams': request_params,
             'taskId': task.id,
             'createTime': create_time,
             'taskStatus': '执行中',
-            'comment': None,
+            'comment': "",
         }
         return json_response.build(json_response.SUCCESS, msg='创建成功！', data=data)
 

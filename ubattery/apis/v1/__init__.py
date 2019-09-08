@@ -33,7 +33,7 @@ api_v1_bp.add_url_rule(
     methods=['GET', 'DELETE']
 )
 api_v1_bp.add_url_rule(
-    '/mining/tasks/<string:task_name>',
+    '/mining/tasks',
     view_func=mining_tasks_api,
     methods=['POST']
 )
